@@ -1,21 +1,220 @@
-# dependencies
-/node_modules
-
-# build output
-/dist
-/build
-
-# logs
+# =================================
+# DEPENDENCIES
+# =================================
+node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
 
-# misc
-.DS_Store
+# =================================
+# ENVIRONMENT VARIABLES
+# =================================
+.env
 .env.local
 .env.development.local
 .env.test.local
 .env.production.local
 
-# vercel
-.vercel
+# =================================
+# BUILD OUTPUT
+# =================================
+dist/
+dist-ssr/
+build/
+*.local
+
+# =================================
+# VITE
+# =================================
+.vite/
+.vite-cache/
+
+# =================================
+# TYPESCRIPT
+# =================================
+*.tsbuildinfo
+.tscache/
+
+# =================================
+# LOGS
+# =================================
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# =================================
+# EDITOR DIRECTORIES AND FILES
+# =================================
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# =================================
+# TESTING
+# =================================
+coverage/
+*.lcov
+.nyc_output/
+
+# =================================
+# STORYBOOK
+# =================================
+storybook-static/
+
+# =================================
+# ESLINT CACHE
+# =================================
+.eslintcache
+
+# =================================
+# STYLELINT CACHE
+# =================================
+.stylelintcache
+
+# =================================
+# MICROBUNDLE CACHE
+# =================================
+.rpt2_cache/
+.rts2_cache_cjs/
+.rts2_cache_es/
+.rts2_cache_umd/
+
+# =================================
+# OPTIONAL NPM CACHE DIRECTORY
+# =================================
+.npm
+
+# =================================
+# OPTIONAL ESLINT CACHE
+# =================================
+.eslintcache
+
+# =================================
+# OPTIONAL REPL HISTORY
+# =================================
+.node_repl_history
+
+# =================================
+# OUTPUT OF 'NPM PACK'
+# =================================
+*.tgz
+
+# =================================
+# YARN INTEGRITY FILE
+# =================================
+.yarn-integrity
+
+# =================================
+# PARCEL-BUNDLER CACHE
+# =================================
+.cache
+.parcel-cache
+
+# =================================
+# NEXT.JS BUILD OUTPUT
+# =================================
+.next
+out
+
+# =================================
+# NUXT.JS BUILD / GENERATE OUTPUT
+# =================================
+.nuxt
+dist
+
+# =================================
+# GATSBY FILES
+# =================================
+.cache/
+public
+
+# =================================
+# VUEPRESS BUILD OUTPUT
+# =================================
+.vuepress/dist
+
+# =================================
+# SERVERLESS DIRECTORIES
+# =================================
+.serverless/
+
+# =================================
+# FUSEBOX CACHE
+# =================================
+.fusebox/
+
+# =================================
+# DYNAMODB LOCAL FILES
+# =================================
+.dynamodb/
+
+# =================================
+# TERNJS PORT FILE
+# =================================
+.tern-port
+
+# =================================
+# STORES VSCode VERSIONS USED FOR TESTING VSIX EXTENSIONS
+# =================================
+.vscode-test
+
+# =================================
+# YARN V2
+# =================================
+.yarn/cache
+.yarn/unplugged
+.yarn/build-state.yml
+.yarn/install-state.gz
+.pnp.*
+
+# =================================
+# OS GENERATED FILES
+# =================================
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# =================================
+# TEMPORARY FILES
+# =================================
+*.tmp
+*.temp
+.temp/
+.tmp/
+
+# =================================
+# BACKUP FILES
+# =================================
+*.bak
+*.backup
+
+# =================================
+# CERTIFICATES & KEYS
+# =================================
+*.pem
+*.key
+*.crt
+*.cert
+
+# =================================
+# MISC
+# =================================
+.cache/
+.sass-cache/
+.turbo/
