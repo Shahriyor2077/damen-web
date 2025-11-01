@@ -18,6 +18,7 @@ import Loader from "src/components/loader/Loader";
 import ContractTable from "./contactTable";
 
 const newColumns: Column[] = [
+  { id: "customerName", label: "Mijoz", sortable: true },
   { id: "productName", label: "Mahsulot Nomi", sortable: true },
   {
     id: "price",
@@ -33,7 +34,7 @@ const newColumns: Column[] = [
     label: "Oldindan To'lov",
     renderCell: (row) => {
       const currency = row.currency === "usd" ? "$" : "so'm";
-      return `${row.initialPayment.toLocaleString()} ${currency}`;
+      return `${row.initialPayment.toLocaleString} ${currency}`;
     },
     sortable: true,
   },
