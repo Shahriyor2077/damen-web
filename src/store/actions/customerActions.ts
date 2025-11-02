@@ -65,11 +65,18 @@ export const getCustomer =
   };
 
 export const addCustomer =
-  (data: IAddCustomer, show: boolean): AppThunk =>
+  (data: IAddCustomer | FormData, show: boolean): AppThunk =>
   async (dispatch) => {
     dispatch(start());
     try {
-      const res = await authApi.post("/customer", data);
+      const res = await authApi.post("/customer", data, {
+        headers: {
+          "Content-Type":
+            data instanceof FormData
+              ? "multipart/form-data"
+              : "application/json",
+        },
+      });
       dispatch(getCustomers());
       dispatch(getNewCustomers());
       dispatch(success());
@@ -107,14 +114,25 @@ export const addCustomer =
   };
 
 export const updateCustomer =
-  (data: IEditCustomer): AppThunk =>
+  (data: IEditCustomer | FormData, id?: string): AppThunk =>
   async (dispatch) => {
     dispatch(start());
     try {
-      const res = await authApi.put("/customer", data);
+      const res = await authApi.put("/customer", data, {
+        headers: {
+          "Content-Type":
+            data instanceof FormData
+              ? "multipart/form-data"
+              : "application/json",
+        },
+      });
       dispatch(getCustomers());
       dispatch(getNewCustomers());
-      dispatch(getCustomer(data.id));
+      const customerId =
+        id || (data instanceof FormData ? data.get("id") : data.id);
+      if (customerId) {
+        dispatch(getCustomer(customerId as string));
+      }
       dispatch(success());
       dispatch(
         enqueueSnackbar({

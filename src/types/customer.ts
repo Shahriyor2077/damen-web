@@ -16,6 +16,11 @@ export interface ICustomer {
   createdAt: Date;
   managerId: string;
   contracts: IContract[];
+  files?: {
+    passport?: string;
+    shartnoma?: string;
+    photo?: string;
+  };
   [key: string]: any;
 }
 

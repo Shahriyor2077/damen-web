@@ -8,15 +8,23 @@ import { useState, useEffect, useCallback } from "react";
 
 import Grid from "@mui/material/Unstable_Grid2";
 import {
+  Box,
+  Stack,
   Button,
   Dialog,
   TextField,
+  IconButton,
   DialogTitle,
   Autocomplete,
   DialogActions,
   DialogContent,
   CircularProgress,
+  Typography,
 } from "@mui/material";
+import { FaPassport } from "react-icons/fa";
+import { FaRegFileLines } from "react-icons/fa6";
+import { TbPhoto } from "react-icons/tb";
+import { MdDelete, MdUpload } from "react-icons/md";
 
 import { useAppDispatch } from "src/hooks/useAppDispatch";
 
@@ -36,6 +44,9 @@ interface IForm {
   address: string;
   birthDate: Date | null;
   managerId: string;
+  passportFile: File | null;
+  shartnomaFile: File | null;
+  photoFile: File | null;
 }
 
 interface IProps {
@@ -67,6 +78,9 @@ const ModalCustomer: FC<IProps> = ({ show = false }) => {
     address: "",
     birthDate: null,
     managerId: "",
+    passportFile: null,
+    shartnomaFile: null,
+    photoFile: null,
   };
 
   const [formValues, setFormValues] = useState<IForm>(defaultFormValues);
@@ -84,6 +98,9 @@ const ModalCustomer: FC<IProps> = ({ show = false }) => {
           ? new Date(customer.data.birthDate)
           : null,
         managerId: customer.data.manager?._id || "",
+        passportFile: null,
+        shartnomaFile: null,
+        photoFile: null,
       });
     }
   }, [customer, customerModal?.type]);
@@ -132,7 +149,6 @@ const ModalCustomer: FC<IProps> = ({ show = false }) => {
       setPhoneHelper("");
       setPhoneError(false);
       if (customer?.data?.phoneNumber !== formValues.phoneNumber) {
-        
         const checkPhone = async () => {
           try {
             setChecking(true);
@@ -220,22 +236,43 @@ const ModalCustomer: FC<IProps> = ({ show = false }) => {
     (event: React.FormEvent<HTMLFormElement>) => {
       event.preventDefault();
 
-      const formJson = {
-        ...formValues,
-        // percent: Number(formValues.percent),
-        id: customer.data?._id,
-      };
-      console.log("formJson", formJson);
+      // FormData yaratish (file upload uchun)
+      const formData = new FormData();
+      formData.append("firstName", formValues.firstName);
+      formData.append("lastName", formValues.lastName);
+      formData.append("passportSeries", formValues.passportSeries);
+      formData.append("phoneNumber", formValues.phoneNumber);
+      formData.append("address", formValues.address);
+      formData.append("managerId", formValues.managerId);
+
+      if (formValues.birthDate) {
+        formData.append("birthDate", formValues.birthDate.toISOString());
+      }
+
+      if (customerModal?.type === "edit" && customer.data?._id) {
+        formData.append("id", customer.data._id);
+      }
+
+      // Fayllarni qo'shish
+      if (formValues.passportFile) {
+        formData.append("passport", formValues.passportFile);
+      }
+      if (formValues.shartnomaFile) {
+        formData.append("shartnoma", formValues.shartnomaFile);
+      }
+      if (formValues.photoFile) {
+        formData.append("photo", formValues.photoFile);
+      }
 
       if (customerModal?.type === "edit") {
-        dispatch(updateCustomer(formJson as unknown as IEditCustomer));
+        dispatch(updateCustomer(formData, customer.data?._id));
       } else {
-        dispatch(addCustomer(formValues as IAddCustomer, show));
+        dispatch(addCustomer(formData, show));
       }
 
       handleClose();
     },
-    [formValues, customer, customerModal?.type, dispatch, handleClose]
+    [formValues, customer, customerModal?.type, dispatch, handleClose, show]
   );
 
   const handleCustomerFocus = useCallback(() => {
@@ -463,6 +500,220 @@ const ModalCustomer: FC<IProps> = ({ show = false }) => {
                   value={customer.data?.manager}
                   sx={{ margin: "dense" }}
                 />
+              </Grid>
+
+              {/* File Upload Section */}
+              <Grid xs={12}>
+                <Typography variant="subtitle2" sx={{ mb: 2, mt: 2 }}>
+                  Yuklangan hujjatlar (ixtiyoriy)
+                </Typography>
+                <Stack spacing={2}>
+                  {/* Passport */}
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 2,
+                      p: 1.5,
+                      border: "1px solid",
+                      borderColor: "divider",
+                      borderRadius: 1,
+                      "&:hover": {
+                        borderColor: "primary.main",
+                        bgcolor: "action.hover",
+                      },
+                    }}
+                  >
+                    <FaPassport size={20} />
+                    <Box sx={{ flex: 1 }}>
+                      <Typography variant="body2">
+                        Passport
+                        {formValues.passportFile
+                          ? `.${formValues.passportFile.name.split(".").pop()}`
+                          : customer.data?.files?.passport
+                            ? `.${customer.data.files.passport.split(".").pop()}`
+                            : ""}
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        {formValues.passportFile
+                          ? formValues.passportFile.name
+                          : customer.data?.files?.passport
+                            ? "Mavjud fayl"
+                            : "Fayl yuklanmagan"}
+                      </Typography>
+                    </Box>
+                    <input
+                      accept="image/*,application/pdf"
+                      style={{ display: "none" }}
+                      id="passport-file-input"
+                      type="file"
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                        const file = e.target.files?.[0] || null;
+                        setFormValues((prev) => ({
+                          ...prev,
+                          passportFile: file,
+                        }));
+                      }}
+                    />
+                    <label htmlFor="passport-file-input">
+                      <IconButton component="span" color="primary" size="small">
+                        <MdUpload />
+                      </IconButton>
+                    </label>
+                    {(formValues.passportFile ||
+                      customer.data?.files?.passport) && (
+                      <IconButton
+                        size="small"
+                        color="error"
+                        onClick={() => {
+                          setFormValues((prev) => ({
+                            ...prev,
+                            passportFile: null,
+                          }));
+                        }}
+                      >
+                        <MdDelete />
+                      </IconButton>
+                    )}
+                  </Box>
+
+                  {/* Shartnoma */}
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 2,
+                      p: 1.5,
+                      border: "1px solid",
+                      borderColor: "divider",
+                      borderRadius: 1,
+                      "&:hover": {
+                        borderColor: "primary.main",
+                        bgcolor: "action.hover",
+                      },
+                    }}
+                  >
+                    <FaRegFileLines size={20} />
+                    <Box sx={{ flex: 1 }}>
+                      <Typography variant="body2">
+                        Shartnoma
+                        {formValues.shartnomaFile
+                          ? `.${formValues.shartnomaFile.name.split(".").pop()}`
+                          : customer.data?.files?.shartnoma
+                            ? `.${customer.data.files.shartnoma.split(".").pop()}`
+                            : ""}
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        {formValues.shartnomaFile
+                          ? formValues.shartnomaFile.name
+                          : customer.data?.files?.shartnoma
+                            ? "Mavjud fayl"
+                            : "Fayl yuklanmagan"}
+                      </Typography>
+                    </Box>
+                    <input
+                      accept="image/*,application/pdf"
+                      style={{ display: "none" }}
+                      id="shartnoma-file-input"
+                      type="file"
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                        const file = e.target.files?.[0] || null;
+                        setFormValues((prev) => ({
+                          ...prev,
+                          shartnomaFile: file,
+                        }));
+                      }}
+                    />
+                    <label htmlFor="shartnoma-file-input">
+                      <IconButton component="span" color="primary" size="small">
+                        <MdUpload />
+                      </IconButton>
+                    </label>
+                    {(formValues.shartnomaFile ||
+                      customer.data?.files?.shartnoma) && (
+                      <IconButton
+                        size="small"
+                        color="error"
+                        onClick={() => {
+                          setFormValues((prev) => ({
+                            ...prev,
+                            shartnomaFile: null,
+                          }));
+                        }}
+                      >
+                        <MdDelete />
+                      </IconButton>
+                    )}
+                  </Box>
+
+                  {/* Photo */}
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 2,
+                      p: 1.5,
+                      border: "1px solid",
+                      borderColor: "divider",
+                      borderRadius: 1,
+                      "&:hover": {
+                        borderColor: "primary.main",
+                        bgcolor: "action.hover",
+                      },
+                    }}
+                  >
+                    <TbPhoto size={20} />
+                    <Box sx={{ flex: 1 }}>
+                      <Typography variant="body2">
+                        Foto
+                        {formValues.photoFile
+                          ? `.${formValues.photoFile.name.split(".").pop()}`
+                          : customer.data?.files?.photo
+                            ? `.${customer.data.files.photo.split(".").pop()}`
+                            : ""}
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        {formValues.photoFile
+                          ? formValues.photoFile.name
+                          : customer.data?.files?.photo
+                            ? "Mavjud fayl"
+                            : "Fayl yuklanmagan"}
+                      </Typography>
+                    </Box>
+                    <input
+                      accept="image/*,application/pdf"
+                      style={{ display: "none" }}
+                      id="photo-file-input"
+                      type="file"
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                        const file = e.target.files?.[0] || null;
+                        setFormValues((prev) => ({
+                          ...prev,
+                          photoFile: file,
+                        }));
+                      }}
+                    />
+                    <label htmlFor="photo-file-input">
+                      <IconButton component="span" color="primary" size="small">
+                        <MdUpload />
+                      </IconButton>
+                    </label>
+                    {(formValues.photoFile || customer.data?.files?.photo) && (
+                      <IconButton
+                        size="small"
+                        color="error"
+                        onClick={() => {
+                          setFormValues((prev) => ({
+                            ...prev,
+                            photoFile: null,
+                          }));
+                        }}
+                      >
+                        <MdDelete />
+                      </IconButton>
+                    )}
+                  </Box>
+                </Stack>
               </Grid>
             </Grid>
           </DialogContent>
