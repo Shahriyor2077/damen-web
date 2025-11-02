@@ -8,13 +8,21 @@ import { useState, useEffect, useCallback } from "react";
 
 import Grid from "@mui/material/Unstable_Grid2";
 import {
+  Box,
+  Stack,
   Button,
   Dialog,
   TextField,
+  IconButton,
   DialogTitle,
   DialogActions,
   DialogContent,
+  Typography,
 } from "@mui/material";
+import { FaPassport } from "react-icons/fa";
+import { FaRegFileLines } from "react-icons/fa6";
+import { TbPhoto } from "react-icons/tb";
+import { MdDelete, MdUpload } from "react-icons/md";
 
 import { useAppDispatch } from "src/hooks/useAppDispatch";
 
@@ -30,6 +38,9 @@ interface IForm {
   phoneNumber: string;
   address: string;
   birthDate: Date | null;
+  passportFile: File | null;
+  shartnomaFile: File | null;
+  photoFile: File | null;
 }
 
 interface IProps {
@@ -53,6 +64,9 @@ const ModalCustomer: FC<IProps> = ({ show = false }) => {
     phoneNumber: "+998",
     address: "",
     birthDate: null,
+    passportFile: null,
+    shartnomaFile: null,
+    photoFile: null,
   };
 
   const [formValues, setFormValues] = useState<IForm>(defaultFormValues);
@@ -188,10 +202,34 @@ const ModalCustomer: FC<IProps> = ({ show = false }) => {
   const handleSubmit = useCallback(
     (event: React.FormEvent<HTMLFormElement>) => {
       event.preventDefault();
-      dispatch(addCustomerSeller(formValues as IAddCustomer, show));
+
+      // FormData yaratish (file upload uchun)
+      const formData = new FormData();
+      formData.append("firstName", formValues.firstName);
+      formData.append("lastName", formValues.lastName);
+      formData.append("passportSeries", formValues.passportSeries);
+      formData.append("phoneNumber", formValues.phoneNumber);
+      formData.append("address", formValues.address);
+
+      if (formValues.birthDate) {
+        formData.append("birthDate", formValues.birthDate.toISOString());
+      }
+
+      // Fayllarni qo'shish
+      if (formValues.passportFile) {
+        formData.append("passport", formValues.passportFile);
+      }
+      if (formValues.shartnomaFile) {
+        formData.append("shartnoma", formValues.shartnomaFile);
+      }
+      if (formValues.photoFile) {
+        formData.append("photo", formValues.photoFile);
+      }
+
+      dispatch(addCustomerSeller(formData, show));
       handleClose();
     },
-    [dispatch, formValues, handleClose]
+    [dispatch, formValues, handleClose, show]
   );
 
   const isFormValid =
@@ -350,6 +388,204 @@ const ModalCustomer: FC<IProps> = ({ show = false }) => {
               multiline
               rows={2}
             />
+
+            {/* File Upload Section */}
+            <Typography variant="subtitle2" sx={{ mb: 2, mt: 2 }}>
+              Yuklangan hujjatlar (ixtiyoriy)
+            </Typography>
+            <Stack spacing={2}>
+              {/* Passport */}
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 2,
+                  p: 1.5,
+                  border: "1px solid",
+                  borderColor: "divider",
+                  borderRadius: 1,
+                  "&:hover": {
+                    borderColor: "primary.main",
+                    bgcolor: "action.hover",
+                  },
+                }}
+              >
+                <FaPassport size={20} />
+                <Box sx={{ flex: 1 }}>
+                  <Typography variant="body2">
+                    Passport
+                    {formValues.passportFile
+                      ? `.${formValues.passportFile.name.split(".").pop()}`
+                      : ""}
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    {formValues.passportFile
+                      ? formValues.passportFile.name
+                      : "Fayl yuklanmagan"}
+                  </Typography>
+                </Box>
+                <input
+                  accept="image/*,application/pdf"
+                  style={{ display: "none" }}
+                  id="passport-file-input"
+                  type="file"
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                    const file = e.target.files?.[0] || null;
+                    setFormValues((prev) => ({
+                      ...prev,
+                      passportFile: file,
+                    }));
+                  }}
+                />
+                <label htmlFor="passport-file-input">
+                  <IconButton component="span" color="primary" size="small">
+                    <MdUpload />
+                  </IconButton>
+                </label>
+                {formValues.passportFile && (
+                  <IconButton
+                    size="small"
+                    color="error"
+                    onClick={() => {
+                      setFormValues((prev) => ({
+                        ...prev,
+                        passportFile: null,
+                      }));
+                    }}
+                  >
+                    <MdDelete />
+                  </IconButton>
+                )}
+              </Box>
+
+              {/* Shartnoma */}
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 2,
+                  p: 1.5,
+                  border: "1px solid",
+                  borderColor: "divider",
+                  borderRadius: 1,
+                  "&:hover": {
+                    borderColor: "primary.main",
+                    bgcolor: "action.hover",
+                  },
+                }}
+              >
+                <FaRegFileLines size={20} />
+                <Box sx={{ flex: 1 }}>
+                  <Typography variant="body2">
+                    Shartnoma
+                    {formValues.shartnomaFile
+                      ? `.${formValues.shartnomaFile.name.split(".").pop()}`
+                      : ""}
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    {formValues.shartnomaFile
+                      ? formValues.shartnomaFile.name
+                      : "Fayl yuklanmagan"}
+                  </Typography>
+                </Box>
+                <input
+                  accept="image/*,application/pdf"
+                  style={{ display: "none" }}
+                  id="shartnoma-file-input"
+                  type="file"
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                    const file = e.target.files?.[0] || null;
+                    setFormValues((prev) => ({
+                      ...prev,
+                      shartnomaFile: file,
+                    }));
+                  }}
+                />
+                <label htmlFor="shartnoma-file-input">
+                  <IconButton component="span" color="primary" size="small">
+                    <MdUpload />
+                  </IconButton>
+                </label>
+                {formValues.shartnomaFile && (
+                  <IconButton
+                    size="small"
+                    color="error"
+                    onClick={() => {
+                      setFormValues((prev) => ({
+                        ...prev,
+                        shartnomaFile: null,
+                      }));
+                    }}
+                  >
+                    <MdDelete />
+                  </IconButton>
+                )}
+              </Box>
+
+              {/* Photo */}
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 2,
+                  p: 1.5,
+                  border: "1px solid",
+                  borderColor: "divider",
+                  borderRadius: 1,
+                  "&:hover": {
+                    borderColor: "primary.main",
+                    bgcolor: "action.hover",
+                  },
+                }}
+              >
+                <TbPhoto size={20} />
+                <Box sx={{ flex: 1 }}>
+                  <Typography variant="body2">
+                    Foto
+                    {formValues.photoFile
+                      ? `.${formValues.photoFile.name.split(".").pop()}`
+                      : ""}
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    {formValues.photoFile
+                      ? formValues.photoFile.name
+                      : "Fayl yuklanmagan"}
+                  </Typography>
+                </Box>
+                <input
+                  accept="image/*,application/pdf"
+                  style={{ display: "none" }}
+                  id="photo-file-input"
+                  type="file"
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                    const file = e.target.files?.[0] || null;
+                    setFormValues((prev) => ({
+                      ...prev,
+                      photoFile: file,
+                    }));
+                  }}
+                />
+                <label htmlFor="photo-file-input">
+                  <IconButton component="span" color="primary" size="small">
+                    <MdUpload />
+                  </IconButton>
+                </label>
+                {formValues.photoFile && (
+                  <IconButton
+                    size="small"
+                    color="error"
+                    onClick={() => {
+                      setFormValues((prev) => ({
+                        ...prev,
+                        photoFile: null,
+                      }));
+                    }}
+                  >
+                    <MdDelete />
+                  </IconButton>
+                )}
+              </Box>
+            </Stack>
           </DialogContent>
           <DialogActions>
             <Button color="error" onClick={handleClose}>

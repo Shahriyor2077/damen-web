@@ -364,11 +364,18 @@ export const confirmationCustomer =
 
 // seller
 export const addCustomerSeller =
-  (data: IAddCustomer, show: boolean): AppThunk =>
+  (data: IAddCustomer | FormData, show: boolean): AppThunk =>
   async (dispatch) => {
     dispatch(start());
     try {
-      const res = await authApi.post("/customer/seller", data);
+      const res = await authApi.post("/customer/seller", data, {
+        headers: {
+          "Content-Type":
+            data instanceof FormData
+              ? "multipart/form-data"
+              : "application/json",
+        },
+      });
       dispatch(getNewCustomers());
       dispatch(success());
       dispatch(
@@ -382,8 +389,9 @@ export const addCustomerSeller =
       }
     } catch (error: any) {
       dispatch(failure());
-      const errorMessage = error.response?.data?.message;
-      const errorMessages: string[] = error.response?.data?.errors;
+      const errorMessage =
+        error.response?.data?.message || "tizimda xatolik ketdi";
+      const errorMessages: string[] = error.response?.data?.errors || [];
       dispatch(
         enqueueSnackbar({
           message: errorMessage,
