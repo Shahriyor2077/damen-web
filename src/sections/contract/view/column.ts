@@ -41,12 +41,20 @@ export const columnsPageContract: Column[] = [
     format: (value: number) => `${value.toLocaleString()} $`,
     sortable: true,
   },
-  // {
-  //   id: "nextPaymentDate",
-  //   label: "Keyingi to'lov sanasi",
-  //   format: (value: number) => value.toString().split("T")[0],
-  //   sortable: true,
-  // },
+  {
+    id: "totalPaid",
+    label: "To'langan",
+    align: "center",
+    format: (value: number) => `${value?.toLocaleString() || 0} $`,
+    sortable: true,
+  },
+  {
+    id: "remainingDebt",
+    label: "Qolgan qarz",
+    align: "center",
+    format: (value: number) => `${value?.toLocaleString() || 0} $`,
+    sortable: true,
+  },
 ];
 
 export const columnsPageNewContract: Column[] = [

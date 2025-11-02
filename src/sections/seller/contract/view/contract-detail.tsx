@@ -1,6 +1,6 @@
 import type { RootState } from "src/store";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useSelector } from "react-redux";
 
 import Grid from "@mui/material/Unstable_Grid2";
@@ -10,7 +10,7 @@ import { useAppDispatch } from "src/hooks/useAppDispatch";
 
 import { DashboardContent } from "src/layouts/dashboard";
 import { setContractId } from "src/store/slices/contractSlice";
-import { getContract } from "src/store/actions/contractActions";
+import { getSellerContract } from "src/store/actions/contractActions";
 
 import { Iconify } from "src/components/iconify";
 import Loader from "src/components/loader/Loader";
@@ -18,41 +18,18 @@ import CustomerInfo from "src/components/customer-infos/customerInfo";
 import { PaymentSchedule } from "src/components/payment-schedule";
 import PayCommentModal from "src/components/render-payment-history/pay-comment-modal";
 
-import Calculate from "./calculate";
-
 const ContractDetails = () => {
   const dispatch = useAppDispatch();
   const [selectedComment, setSelectedComment] = useState("");
-  const { contract, isLoading, contractId } = useSelector(
+  const { contract, isLoading } = useSelector(
     (state: RootState) => state.contract
   );
   const { customer } = useSelector((state: RootState) => state.customer);
 
-  // Shartnoma ochilganda ma'lumotlarni qayta yuklash
-  useEffect(() => {
-    if (contractId) {
-      console.log("Loading contract:", contractId);
-      dispatch(getContract(contractId));
-    }
-  }, [contractId, dispatch]);
-
-  // Debug: contract ma'lumotlarini ko'rish
-  useEffect(() => {
-    if (contract) {
-      console.log("Contract data:", {
-        id: contract._id,
-        totalPaid: contract.totalPaid,
-        initialPayment: contract.initialPayment,
-        totalPrice: contract.totalPrice,
-        remainingDebt: contract.remainingDebt,
-        paymentsCount: contract.payments?.length,
-      });
-    }
-  }, [contract]);
-
   if (!contract && isLoading) {
     return <Loader />;
   }
+
   return (
     <DashboardContent>
       <Box
@@ -77,11 +54,7 @@ const ContractDetails = () => {
           </Paper>
         </Grid>
 
-        <Grid xs={12} md={6}>
-          {contract && <Calculate contract={contract} />}
-        </Grid>
-
-        <Grid xs={12} md={6}>
+        <Grid xs={12}>
           {contract && (
             <PaymentSchedule
               startDate={contract.startDate}
@@ -95,7 +68,7 @@ const ContractDetails = () => {
               payments={contract.payments}
               onPaymentSuccess={() => {
                 // Shartnomani qayta yuklash
-                dispatch(getContract(contract._id));
+                dispatch(getSellerContract(contract._id));
               }}
             />
           )}

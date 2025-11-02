@@ -478,7 +478,10 @@ export function CustomerDetails() {
               </Stack>
             }
           >
-            <CustomerContract customerContracts={customer.contracts} />
+            <CustomerContract
+              customerContracts={customer.contracts}
+              customerId={customerId || undefined}
+            />
           </Suspense>
         </Grid>
       </Grid>

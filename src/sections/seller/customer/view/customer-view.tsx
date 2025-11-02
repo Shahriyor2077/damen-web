@@ -17,12 +17,10 @@ import {
 
 import { useAppDispatch } from "src/hooks/useAppDispatch";
 
+import authApi from "src/server/auth";
 import { setModal } from "src/store/slices/modalSlice";
 import { DashboardContent } from "src/layouts/dashboard";
-import {
-  getCustomers,
-  getNewCustomers,
-} from "src/store/actions/customerActions";
+import { setCustomers, setNewCustomers } from "src/store/slices/customerSlice";
 
 import { Iconify } from "src/components/iconify";
 import Loader from "src/components/loader/Loader";
@@ -114,8 +112,21 @@ const CustomerView = () => {
   );
 
   useEffect(() => {
-    dispatch(getCustomers());
-    dispatch(getNewCustomers());
+    const fetchCustomers = async () => {
+      try {
+        // Seller uchun yangi mijozlarni olish
+        const newRes = await authApi.get("/seller/customer/get-new-all");
+        dispatch(setNewCustomers(newRes.data));
+
+        // Barcha mijozlarni olish (dashboard API)
+        const allRes = await authApi.get("/customer/get-all");
+        dispatch(setCustomers(allRes.data));
+      } catch (error) {
+        console.error("Error fetching customers:", error);
+      }
+    };
+
+    fetchCustomers();
   }, [dispatch]);
 
   const [tab, setTab] = useState(0);

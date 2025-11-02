@@ -2,50 +2,23 @@ import authApi from "src/server/auth";
 import { enqueueSnackbar } from "../slices/snackbar";
 import type { AppThunk } from "../index";
 
-// Payment history action
-export const getPaymentHistory =
-  (customerId?: string, contractId?: string): AppThunk =>
-  async (dispatch) => {
-    try {
-      console.log("Fetching payment history...", { customerId, contractId });
-
-      let url = "/payment/history";
-      const params = new URLSearchParams();
-
-      if (customerId) params.append("customerId", customerId);
-      if (contractId) params.append("contractId", contractId);
-
-      if (params.toString()) {
-        url += `?${params.toString()}`;
-      }
-
-      const res = await authApi.get(url);
-      console.log("Payment history response:", res.data);
-
-      return res.data;
-    } catch (error: any) {
-      console.error("Payment history error:", error);
-      dispatch(
-        enqueueSnackbar({
-          message:
-            error.response?.data?.message ||
-            "To'lovlar tarixini olishda xatolik",
-          options: { variant: "error" },
-        })
-      );
-      throw error;
-    }
+interface PaymentData {
+  id: string; // debtor ID
+  amount: number;
+  notes?: string;
+  currencyDetails: {
+    dollar: number;
+    sum: number;
   };
+  currencyCourse: number;
+}
 
-// Pay debt action
-export const payDebt =
-  (paymentData: any): AppThunk =>
+// To'lov qilish
+export const makePayment =
+  (data: PaymentData, onSuccess?: () => void): AppThunk =>
   async (dispatch) => {
     try {
-      console.log("Processing payment...", paymentData);
-
-      const res = await authApi.put("/payment", paymentData);
-      console.log("Payment response:", res.data);
+      const res = await authApi.put("/payment", data);
 
       dispatch(
         enqueueSnackbar({
@@ -54,16 +27,55 @@ export const payDebt =
         })
       );
 
-      return res.data;
+      if (onSuccess) {
+        onSuccess();
+      }
     } catch (error: any) {
-      console.error("Payment error:", error);
+      const errorMessage =
+        error.response?.data?.message || "To'lov amalga oshirilmadi";
+      const errorMessages: string[] = error.response?.data?.errors || [];
+
       dispatch(
         enqueueSnackbar({
-          message:
-            error.response?.data?.message || "To'lov amalga oshirishda xatolik",
+          message: errorMessage,
           options: { variant: "error" },
         })
       );
-      throw error;
+
+      if (Array.isArray(errorMessages)) {
+        errorMessages.forEach((err) => {
+          dispatch(
+            enqueueSnackbar({
+              message: err,
+              options: { variant: "error" },
+            })
+          );
+        });
+      }
+    }
+  };
+
+// To'lov tarixini olish
+export const getPaymentHistory =
+  (customerId?: string, contractId?: string): AppThunk =>
+  async (dispatch) => {
+    try {
+      const params = new URLSearchParams();
+      if (customerId) params.append("customerId", customerId);
+      if (contractId) params.append("contractId", contractId);
+
+      const res = await authApi.get(`/payment/history?${params.toString()}`);
+      return res.data;
+    } catch (error: any) {
+      const errorMessage =
+        error.response?.data?.message || "To'lov tarixini olishda xatolik";
+
+      dispatch(
+        enqueueSnackbar({
+          message: errorMessage,
+          options: { variant: "error" },
+        })
+      );
+      return [];
     }
   };

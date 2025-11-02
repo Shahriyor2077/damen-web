@@ -17,8 +17,16 @@ function processInput(inputValue: InputNumberValue): number | null {
 
 // ----------------------------------------------------------------------
 
-export const formatNumber = (num: number) =>
-  num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+export const formatNumber = (num: number) => {
+  // Agar raqam butun bo'lsa, kasrni ko'rsatmaymiz
+  // Agar kasr bo'lsa, faqat kerakli raqamlarni ko'rsatamiz
+  const formatted = new Intl.NumberFormat("en-US", {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2,
+  }).format(num);
+
+  return formatted;
+};
 
 export function fNumber(inputValue: InputNumberValue, options?: Options) {
   const locale = DEFAULT_LOCALE;

@@ -1,28 +1,37 @@
 import type { IContract } from "src/types/contract";
 
 import React from "react";
-import { FaPrint } from "react-icons/fa6";
 import { IoChevronDownOutline } from "react-icons/io5";
+
+import { useAppDispatch } from "src/hooks/useAppDispatch";
+
+import { getCustomer } from "src/store/actions/customerActions";
 
 import Grid from "@mui/material/Unstable_Grid2";
 import {
   Box,
+  Chip,
   Paper,
   Stack,
+  Divider,
   Accordion,
   Typography,
   AccordionSummary,
   AccordionDetails,
 } from "@mui/material";
 
-import RenderContractFields from "src/components/render-contract-fields/renderContractFields";
-import RenderPaymentHistory from "src/components/render-payment-history/renderPaymentHistory";
+import { PaymentSchedule } from "src/components/payment-schedule";
 
 interface IProps {
   customerContracts?: IContract[];
+  customerId?: string;
 }
 
-const CustomerContract: React.FC<IProps> = ({ customerContracts }) => {
+const CustomerContract: React.FC<IProps> = ({
+  customerContracts,
+  customerId,
+}) => {
+  const dispatch = useAppDispatch();
   console.log("dfdgf", customerContracts);
 
   const sortedContracts = [...(customerContracts ?? [])].sort((a, b) => {
@@ -30,105 +39,230 @@ const CustomerContract: React.FC<IProps> = ({ customerContracts }) => {
     return order[a.status] - order[b.status];
   });
 
-  return (
-    <div>
-      <Stack spacing={3}>
-        <Typography variant="h6">Xarid qilingan mahsulotlar</Typography>
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "active":
+        return "success";
+      case "completed":
+        return "warning";
+      case "cancelled":
+        return "error";
+      default:
+        return "default";
+    }
+  };
 
-        {sortedContracts?.map((contract) => (
+  const getStatusLabel = (status: string) => {
+    switch (status) {
+      case "active":
+        return "Faol";
+      case "completed":
+        return "Yakunlangan";
+      case "cancelled":
+        return "Bekor qilingan";
+      default:
+        return status;
+    }
+  };
+
+  return (
+    <Stack spacing={3}>
+      <Typography variant="h5" fontWeight="bold">
+        Xarid qilingan mahsulotlar
+      </Typography>
+
+      {sortedContracts.length === 0 ? (
+        <Paper sx={{ p: 4, textAlign: "center" }}>
+          <Typography variant="body1" color="text.secondary">
+            Hozircha xarid qilingan mahsulot yo'q
+          </Typography>
+        </Paper>
+      ) : (
+        sortedContracts.map((contract) => (
           <Paper
-            elevation={2}
-            sx={{ mb: 2, borderRadius: 2, p: 1 }}
+            elevation={3}
+            sx={{
+              borderRadius: 2,
+              overflow: "hidden",
+              border: "1px solid",
+              borderColor: "divider",
+            }}
             key={contract._id}
           >
             <Accordion sx={{ boxShadow: "none" }}>
-              <AccordionSummary expandIcon={<IoChevronDownOutline size={20} />}>
-                <Box
-                  display="flex"
-                  justifyContent="space-between"
-                  width="100%"
-                  alignItems="center"
-                >
-                  <Typography fontWeight="bold">
-                    {contract.productName}
-                  </Typography>
-                  <Typography fontWeight="bold">
-                    {contract.startDate.split("T")[0]}
-                  </Typography>
-                  <Typography fontWeight="bold">
-                    {contract.period} oy
-                  </Typography>
-                  <Typography fontWeight="bold">
-                    {contract.monthlyPayment} oyiga
-                  </Typography>
-                  <Typography
-                    color={
-                      contract.status === "active"
-                        ? "green"
-                        : contract.status === "completed"
-                          ? "orange"
-                          : "red"
-                    }
-                  >
-                    {contract.status === "active"
-                      ? "Faol"
-                      : contract.status === "completed"
-                        ? "Yakunlangan"
-                        : "Bekor qilingan"}
-                  </Typography>
-                </Box>
-              </AccordionSummary>
-
-              <AccordionDetails
+              <AccordionSummary
+                expandIcon={<IoChevronDownOutline size={24} />}
                 sx={{
-                  display: "flex",
-                  flexDirection: { xs: "column", lg: "row" },
-                  gap: 2,
+                  bgcolor: "background.neutral",
+                  "&:hover": { bgcolor: "action.hover" },
                 }}
               >
-                <Grid container spacing={1}>
-                  <RenderContractFields contract={contract} />
-                </Grid>
-                <Stack spacing={1}>
-                  <Typography variant="subtitle2">To`lov tarixi:</Typography>
-                  <RenderPaymentHistory payments={contract.payments} />
+                <Stack
+                  direction="row"
+                  spacing={2}
+                  alignItems="center"
+                  width="100%"
+                  flexWrap="wrap"
+                >
+                  <Typography variant="h6" fontWeight="bold" sx={{ flex: 1 }}>
+                    {contract.productName}
+                  </Typography>
+
+                  <Chip
+                    label={getStatusLabel(contract.status)}
+                    color={getStatusColor(contract.status)}
+                    size="small"
+                  />
+
                   <Box
-                    display="flex"
-                    flexDirection="column"
-                    alignItems="end"
-                    gap={2}
-                    p={3}
-                    bgcolor="ButtonHighlight"
-                    borderRadius={3}
-                    minWidth={500}
+                    sx={{
+                      display: "flex",
+                      gap: 3,
+                      flexWrap: "wrap",
+                    }}
                   >
-                    <Stack
-                      sx={{ cursor: "pointer" }}
-                      direction="row"
-                      spacing={1}
-                      alignItems="center"
-                      justifyItems="end"
-                    >
-                      <Typography>Shartnoma.pdf</Typography>
-                      <FaPrint />
-                    </Stack>
-                    <Stack
-                      sx={{ cursor: "pointer" }}
-                      direction="row"
-                      spacing={1}
-                      alignItems="center"
-                    >
-                      <Typography>To`lov tavsifi</Typography>
-                      <FaPrint />
-                    </Stack>
+                    <Box>
+                      <Typography variant="caption" color="text.secondary">
+                        Boshlangan sana
+                      </Typography>
+                      <Typography variant="body2" fontWeight="medium">
+                        {new Date(contract.startDate).toLocaleDateString(
+                          "uz-UZ"
+                        )}
+                      </Typography>
+                    </Box>
+
+                    <Box>
+                      <Typography variant="caption" color="text.secondary">
+                        Muddat
+                      </Typography>
+                      <Typography variant="body2" fontWeight="medium">
+                        {contract.period} oy
+                      </Typography>
+                    </Box>
+
+                    <Box>
+                      <Typography variant="caption" color="text.secondary">
+                        Oylik to'lov
+                      </Typography>
+                      <Typography variant="body2" fontWeight="medium">
+                        {contract.monthlyPayment.toLocaleString()} $
+                      </Typography>
+                    </Box>
                   </Box>
+                </Stack>
+              </AccordionSummary>
+
+              <AccordionDetails sx={{ p: 3 }}>
+                <Stack spacing={3}>
+                  {/* Shartnoma ma'lumotlari */}
+                  <Box>
+                    <Typography variant="subtitle1" fontWeight="bold" mb={2}>
+                      Shartnoma ma'lumotlari
+                    </Typography>
+                    <Grid container spacing={2}>
+                      <Grid xs={6} sm={4}>
+                        <Typography variant="caption" color="text.secondary">
+                          Mahsulot nomi
+                        </Typography>
+                        <Typography variant="body2" fontWeight="medium">
+                          {contract.productName}
+                        </Typography>
+                      </Grid>
+                      <Grid xs={6} sm={4}>
+                        <Typography variant="caption" color="text.secondary">
+                          Asl narxi
+                        </Typography>
+                        <Typography variant="body2" fontWeight="medium">
+                          {contract.originalPrice.toLocaleString()} $
+                        </Typography>
+                      </Grid>
+                      <Grid xs={6} sm={4}>
+                        <Typography variant="caption" color="text.secondary">
+                          Sotish narxi
+                        </Typography>
+                        <Typography variant="body2" fontWeight="medium">
+                          {contract.price.toLocaleString()} $
+                        </Typography>
+                      </Grid>
+                      <Grid xs={6} sm={4}>
+                        <Typography variant="caption" color="text.secondary">
+                          Boshlang'ich to'lov
+                        </Typography>
+                        <Typography variant="body2" fontWeight="medium">
+                          {contract.initialPayment.toLocaleString()} $
+                        </Typography>
+                      </Grid>
+                      <Grid xs={6} sm={4}>
+                        <Typography variant="caption" color="text.secondary">
+                          Foiz
+                        </Typography>
+                        <Typography variant="body2" fontWeight="medium">
+                          {contract.percentage}%
+                        </Typography>
+                      </Grid>
+                      <Grid xs={6} sm={4}>
+                        <Typography variant="caption" color="text.secondary">
+                          Umumiy narx
+                        </Typography>
+                        <Typography variant="body2" fontWeight="medium">
+                          {contract.totalPrice.toLocaleString()} $
+                        </Typography>
+                      </Grid>
+                      <Grid xs={6} sm={4}>
+                        <Typography variant="caption" color="text.secondary">
+                          To'langan
+                        </Typography>
+                        <Typography
+                          variant="body2"
+                          fontWeight="medium"
+                          color="success.main"
+                        >
+                          {contract.totalPaid?.toLocaleString() || 0} $
+                        </Typography>
+                      </Grid>
+                      <Grid xs={6} sm={4}>
+                        <Typography variant="caption" color="text.secondary">
+                          Qolgan qarz
+                        </Typography>
+                        <Typography
+                          variant="body2"
+                          fontWeight="medium"
+                          color="error.main"
+                        >
+                          {contract.remainingDebt?.toLocaleString() || 0} $
+                        </Typography>
+                      </Grid>
+                    </Grid>
+                  </Box>
+
+                  <Divider />
+
+                  {/* To'lov jadvali */}
+                  <PaymentSchedule
+                    startDate={contract.startDate}
+                    monthlyPayment={contract.monthlyPayment}
+                    period={contract.period}
+                    initialPayment={contract.initialPayment}
+                    initialPaymentDueDate={contract.initialPaymentDueDate}
+                    contractId={contract._id}
+                    remainingDebt={contract.remainingDebt}
+                    totalPaid={contract.totalPaid}
+                    payments={contract.payments}
+                    onPaymentSuccess={() => {
+                      // Mijozni qayta yuklash
+                      if (customerId) {
+                        dispatch(getCustomer(customerId));
+                      }
+                    }}
+                  />
                 </Stack>
               </AccordionDetails>
             </Accordion>
           </Paper>
-        ))}
-      </Stack>
-    </div>
+        ))
+      )}
+    </Stack>
   );
 };
 
