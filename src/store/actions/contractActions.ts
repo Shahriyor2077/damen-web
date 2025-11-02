@@ -145,13 +145,62 @@ export const updateContract =
   };
 
 // seller
-export const addContractSeller =
-  (data: IAddContract): AppThunk =>
+export const getSellerActiveContracts = (): AppThunk => async (dispatch) => {
+  dispatch(start());
+  try {
+    const res = await authApi.get("/seller/contract/active");
+    const { data } = res;
+    dispatch(setContracts(data));
+  } catch (error: any) {
+    dispatch(failure());
+  }
+};
+
+export const getSellerNewContracts = (): AppThunk => async (dispatch) => {
+  dispatch(start());
+  try {
+    const res = await authApi.get("/seller/contract/new");
+    const { data } = res;
+    dispatch(setNewContracts(data));
+  } catch (error: any) {
+    dispatch(failure());
+  }
+};
+
+export const getSellerCompletedContracts = (): AppThunk => async (dispatch) => {
+  dispatch(start());
+  try {
+    const res = await authApi.get("/seller/contract/completed");
+    const { data } = res;
+    dispatch(setCompletedContracts(data));
+  } catch (error: any) {
+    dispatch(failure());
+  }
+};
+
+export const getSellerContract =
+  (id: string): AppThunk =>
   async (dispatch) => {
     dispatch(start());
     try {
-      const res = await authApi.post("/contract/seller", data);
-      dispatch(getNewContracts());
+      const res = await authApi.get(`/seller/contract/${id}`);
+      const { data } = res;
+      dispatch(setContract(data));
+      dispatch(setCustomer(data.customer));
+    } catch (error: any) {
+      dispatch(failure());
+    }
+  };
+
+export const updateSellerContract =
+  (data: IEditContract): AppThunk =>
+  async (dispatch) => {
+    dispatch(start());
+    try {
+      const res = await authApi.put(`/seller/contract/${data.id}`, data);
+      dispatch(getSellerContract(data.id));
+      dispatch(getSellerActiveContracts());
+      dispatch(getSellerNewContracts());
       dispatch(success());
       dispatch(
         enqueueSnackbar({
@@ -181,5 +230,72 @@ export const addContractSeller =
           );
         });
       }
+    }
+  };
+
+export const addContractSeller =
+  (data: IAddContract): AppThunk =>
+  async (dispatch) => {
+    dispatch(start());
+    try {
+      const res = await authApi.post("/seller/contract", data);
+      dispatch(getSellerNewContracts());
+      dispatch(success());
+      dispatch(
+        enqueueSnackbar({
+          message: res.data.message,
+          options: { variant: "success" },
+        })
+      );
+    } catch (error: any) {
+      dispatch(failure());
+      const errorMessage = error.response?.data?.message;
+      const errorMessages: string[] = error.response?.data?.errors;
+
+      dispatch(
+        enqueueSnackbar({
+          message: errorMessage,
+          options: { variant: "error" },
+        })
+      );
+
+      if (Array.isArray(errorMessages)) {
+        errorMessages.forEach((err) => {
+          dispatch(
+            enqueueSnackbar({
+              message: err,
+              options: { variant: "error" },
+            })
+          );
+        });
+      }
+    }
+  };
+
+// Shartnomani tasdiqlash (Admin/Moderator/Manager)
+export const approveContract =
+  (contractId: string): AppThunk =>
+  async (dispatch) => {
+    dispatch(start());
+    try {
+      const res = await authApi.post(`/contract/approve/${contractId}`);
+      dispatch(getNewContracts());
+      dispatch(getContracts());
+      dispatch(success());
+      dispatch(
+        enqueueSnackbar({
+          message: res.data.message || "Shartnoma tasdiqlandi",
+          options: { variant: "success" },
+        })
+      );
+    } catch (error: any) {
+      dispatch(failure());
+      const errorMessage = error.response?.data?.message;
+      dispatch(
+        enqueueSnackbar({
+          message: errorMessage || "Shartnomani tasdiqlashda xatolik",
+          options: { variant: "error" },
+        })
+      );
     }
   };

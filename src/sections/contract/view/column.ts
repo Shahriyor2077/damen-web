@@ -52,24 +52,26 @@ export const columnsPageContract: Column[] = [
 export const columnsPageNewContract: Column[] = [
   { id: "productName", label: "Mahsulot Nomi", sortable: true },
   { id: "customerName", label: "Mijoz", sortable: true },
+  { id: "sellerName", label: "Seller", sortable: true },
   {
     id: "price",
     label: "Narxi",
-    format: (value: number) => value.toString().split("T")[0],
+    format: (value: number) => `${value.toLocaleString()} $`,
     sortable: true,
   },
   {
     id: "initialPayment",
     label: "Oldindan To'lov",
-    // renderCell: (row) => {
-    //   const currency = row.currency === "usd" ? "$" : "so'm";
-    //   return `${row.initialPayment.toLocaleString()} ${currency}`;
-    // },
-    format: (value: number) => value.toString().split("T")[0],
+    format: (value: number) => `${value.toLocaleString()} $`,
     sortable: true,
   },
   {
     id: "notes",
     label: "Izoh",
+  },
+  {
+    id: "actions",
+    label: "Amallar",
+    align: "center",
   },
 ];

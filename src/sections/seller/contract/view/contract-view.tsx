@@ -1,23 +1,27 @@
 import type { RootState } from "src/store";
 import type { Column } from "src/components/table/types";
 
-import { memo, useEffect } from "react";
+import { memo, useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 
-import { Box, Button, Tooltip, Typography } from "@mui/material";
+import { Box, Button, Tooltip, Typography, Tab, Tabs } from "@mui/material";
 
 import { useAppDispatch } from "src/hooks/useAppDispatch";
 
 import { setModal } from "src/store/slices/modalSlice";
 import { DashboardContent } from "src/layouts/dashboard";
-import { getNewContracts } from "src/store/actions/contractActions";
+import {
+  getSellerActiveContracts,
+  getSellerNewContracts,
+  getSellerCompletedContracts,
+} from "src/store/actions/contractActions";
 
 import { Iconify } from "src/components/iconify";
 import Loader from "src/components/loader/Loader";
 
 import ContractTable from "./contactTable";
 
-const newColumns: Column[] = [
+const columns: Column[] = [
   { id: "customerName", label: "Mijoz", sortable: true },
   { id: "productName", label: "Mahsulot Nomi", sortable: true },
   {
@@ -39,23 +43,41 @@ const newColumns: Column[] = [
   {
     id: "notes",
     label: "Izoh",
-    // format: (value: number) => `${value.toLocaleString()} so'm`,
-    // sortable: true,
   },
 ];
 
 const ContractsView = () => {
   const dispatch = useAppDispatch();
+  const [currentTab, setCurrentTab] = useState("new");
 
-  const { contracts, newContracts, isLoading } = useSelector(
-    (state: RootState) => state.contract
-  );
+  const { contracts, newContracts, completedContracts, isLoading } =
+    useSelector((state: RootState) => state.contract);
 
   useEffect(() => {
-    dispatch(getNewContracts());
+    // Load all contract types on mount
+    dispatch(getSellerNewContracts());
+    dispatch(getSellerActiveContracts());
+    dispatch(getSellerCompletedContracts());
   }, [dispatch]);
 
-  if (contracts.length === 0 && isLoading) {
+  const handleTabChange = (event: React.SyntheticEvent, newValue: string) => {
+    setCurrentTab(newValue);
+  };
+
+  const getCurrentData = () => {
+    switch (currentTab) {
+      case "new":
+        return newContracts;
+      case "active":
+        return contracts;
+      case "completed":
+        return completedContracts;
+      default:
+        return newContracts;
+    }
+  };
+
+  if (isLoading && newContracts.length === 0 && contracts.length === 0) {
     return <Loader />;
   }
 
@@ -66,7 +88,7 @@ const ContractsView = () => {
         alignItems="center"
         justifyContent="end"
         gap={3}
-        mb={5}
+        mb={3}
       >
         <Typography variant="h4" flexGrow={1}>
           Shartnomalar
@@ -90,7 +112,23 @@ const ContractsView = () => {
         </Tooltip>
       </Box>
 
-      <ContractTable data={newContracts} columns={newColumns} />
+      <Tabs
+        value={currentTab}
+        onChange={handleTabChange}
+        sx={{ mb: 3, borderBottom: 1, borderColor: "divider" }}
+      >
+        <Tab
+          label={`Yangi shartnomalar (${newContracts.length})`}
+          value="new"
+        />
+        <Tab label={`Faol shartnomalar (${contracts.length})`} value="active" />
+        <Tab
+          label={`Tugatilgan (${completedContracts.length})`}
+          value="completed"
+        />
+      </Tabs>
+
+      <ContractTable data={getCurrentData()} columns={columns} />
     </DashboardContent>
   );
 };

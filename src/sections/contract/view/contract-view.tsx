@@ -26,6 +26,7 @@ import {
   getContracts,
   getNewContracts,
   getCompletedContracts,
+  approveContract,
 } from "src/store/actions/contractActions";
 
 import { Iconify } from "src/components/iconify";
@@ -236,6 +237,21 @@ export function ContractsView() {
                 })
               );
             }}
+            renderActions={(row) => (
+              <Button
+                variant="contained"
+                color="success"
+                size="small"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (window.confirm("Shartnomani tasdiqlaysizmi?")) {
+                    dispatch(approveContract(row._id));
+                  }
+                }}
+              >
+                Tasdiqlash
+              </Button>
+            )}
           />
 
           {/* <TableComponent
