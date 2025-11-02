@@ -16,10 +16,13 @@ import type { IStatistic } from "../slices/dashboardSlice";
 export const getDashboard = (): AppThunk => async (dispatch) => {
   dispatch(start());
   try {
+    console.log("Fetching dashboard data...");
     const res = await authApi.get("/dashboard");
     const { data } = res;
+    console.log("Dashboard API response:", data);
     dispatch(setDashboard(data.data));
   } catch (error: any) {
+    console.error("Dashboard API error:", error);
     dispatch(failure());
   }
 };
@@ -29,12 +32,15 @@ export const getStatistic =
   async (dispatch) => {
     dispatch(start());
     try {
+      console.log("Fetching statistic for granularity:", granularity);
       const res = await authApi.get(
         `/dashboard/statistic?range=${granularity}`
       );
       const { data }: { data: IStatistic } = res;
+      console.log("Statistic API response:", data);
       dispatch(setStatistic({ granularity, data }));
     } catch (error: any) {
+      console.error("Statistic API error:", error);
       dispatch(failure());
     }
   };

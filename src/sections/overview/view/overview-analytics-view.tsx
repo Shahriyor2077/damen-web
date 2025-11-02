@@ -30,9 +30,21 @@ export function OverviewAnalyticsView() {
   );
   const { currency } = useSelector((state: RootState) => state.dashboard);
 
+  // Debug logging
+  console.log("Dashboard data:", dashboard);
+  console.log("Currency:", currency);
+  console.log("Loading states:", { isLoading, isLoadingStatistic });
+
   useEffect(() => {
     dispatch(getDashboard());
     dispatch(getCurrencyCourse());
+
+    // Auto-refresh every 30 seconds
+    const interval = setInterval(() => {
+      dispatch(getDashboard());
+    }, 30000);
+
+    return () => clearInterval(interval);
   }, [dispatch]);
 
   if (dashboard == null && isLoading) {
@@ -167,9 +179,7 @@ export function OverviewAnalyticsView() {
           )}
         </Grid>
 
-        {/* <Grid xs={12} md={6} lg={8}>
-          <AnalyticsNews title="News" list={_posts.slice(0, 5)} />
-        </Grid> */}
+        {/* Payment history table removed - only chart needed */}
       </Grid>
     </DashboardContent>
   );

@@ -39,7 +39,15 @@ export function AnalyticsWebsiteVisits() {
 
   const selectedStatistic = statistic[localGranularity];
 
+  // Debug logging
+  console.log("Analytics component:", {
+    localGranularity,
+    selectedStatistic,
+    statistic,
+  });
+
   useEffect(() => {
+    console.log("Fetching statistic for:", localGranularity);
     if (!selectedStatistic) {
       dispatch(getStatistic(localGranularity));
     }
