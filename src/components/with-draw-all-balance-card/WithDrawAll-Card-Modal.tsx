@@ -70,9 +70,9 @@ const WithdrawAllBalanceCard: FC<Props> = ({ employee }) => {
     };
 
     const total = Object.values(normalizedAmounts).reduce(
-      (acc, val) => acc + val,
-      0
-    );
+      (acc, val) => Number(acc || 0) + Number(val || 0),
+      0 as number
+    ) as number;
     if (total <= 0) {
       dispatch(
         enqueueSnackbar({

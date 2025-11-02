@@ -3,7 +3,7 @@ import type { RootState } from "src/store";
 import { useEffect } from "react";
 import { useSelector } from "react-redux";
 
-import { Skeleton } from "@mui/material";
+import { Skeleton, Box } from "@mui/material";
 import Grid from "@mui/material/Unstable_Grid2";
 import Typography from "@mui/material/Typography";
 
@@ -103,12 +103,33 @@ export function OverviewAnalyticsView() {
           />
         </Grid>
         <Grid xs={12} sm={6} md={3} sx={{ height: "100%" }}>
-          <AnalyticsWidgetSummary
-            title="Balans (sum)"
-            total={dashboard?.totalBalance.sum || 0}
-            color="success"
-            icon={<img alt="icon" src="/assets/icons/glass/currency.png" />}
-          />
+          {dashboard?.totalBalance.hasCurrencyRate &&
+          dashboard?.totalBalance.sum !== null ? (
+            <AnalyticsWidgetSummary
+              title="Balans (sum)"
+              total={dashboard.totalBalance.sum}
+              color="success"
+              icon={<img alt="icon" src="/assets/icons/glass/currency.png" />}
+            />
+          ) : (
+            <Box
+              sx={{
+                p: 3,
+                borderRadius: 2,
+                bgcolor: "warning.lighter",
+                border: "1px dashed",
+                borderColor: "warning.main",
+                textAlign: "center",
+              }}
+            >
+              <Typography variant="h6" color="warning.main" gutterBottom>
+                Balans (sum)
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Dollar kursini to'g'irlang
+              </Typography>
+            </Box>
+          )}
         </Grid>
 
         <Grid xs={12} sm={6} md={3} sx={{ height: "100%" }}>

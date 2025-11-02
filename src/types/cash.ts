@@ -1,6 +1,8 @@
 export type CurrencyDetails = {
   dollar: number;
   sum: number;
+  hasCurrencyRate?: boolean;
+  currencyRate?: number | null;
 };
 
 export interface ICash {
