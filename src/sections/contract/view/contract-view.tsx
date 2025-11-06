@@ -122,7 +122,7 @@ export function ContractsView() {
           gap={3}
           mb={2}
         >
-          <Tooltip title="Import from Excel">
+          {/* <Tooltip title="Import from Excel">
             <Button
               variant="contained"
               color="primary"
@@ -132,7 +132,7 @@ export function ContractsView() {
             >
               Import
             </Button>
-          </Tooltip>
+          </Tooltip> */}
           <input
             type="file"
             ref={fileInputRef}
