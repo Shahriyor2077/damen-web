@@ -24,6 +24,13 @@ export const refreshProfile = (): AppThunk => async (dispatch) => {
     dispatch(refreshSuccess(response.data));
   } catch (error: any) {
     const errorMessage = error.response?.data?.message || error.message;
+
+    // 401 xatolik bo'lsa, tokenni o'chirish va login sahifasiga yo'naltirish
+    if (error.response?.status === 401) {
+      localStorage.removeItem("accessToken");
+      dispatch(logoutUser());
+    }
+
     dispatch(refreshFailure(errorMessage));
   }
 };

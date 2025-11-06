@@ -25,7 +25,9 @@ export default function App() {
   const { isLoadingRefresh } = useTypedSelector((state) => state.auth);
 
   useEffect(() => {
-    if (localStorage.getItem("accessToken")) {
+    const token = localStorage.getItem("accessToken");
+    // Faqat token mavjud bo'lsa va sahifa birinchi marta ochilganda refresh qilish
+    if (token) {
       dispatch(refreshProfile());
     }
   }, []);
