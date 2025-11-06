@@ -36,14 +36,18 @@ const authSlice = createSlice({
     },
     refreshSuccess(
       state,
-      action: PayloadAction<{ profile: IProfile; token: string }>
+      action: PayloadAction<{
+        profile: IProfile;
+        accessToken?: string;
+        token?: string;
+      }>
     ) {
       state.isLoadingRefresh = false;
       state.loggedIn = true;
       state.profile = action.payload.profile;
       state.error = null;
-      action.payload.token &&
-        localStorage.setItem("accessToken", action?.payload.token);
+      const token = action.payload.accessToken || action.payload.token;
+      token && localStorage.setItem("accessToken", token);
     },
     refreshFailure(state, action: PayloadAction<string>) {
       state.isLoadingRefresh = false;
@@ -57,14 +61,18 @@ const authSlice = createSlice({
     },
     loginSuccess(
       state,
-      action: PayloadAction<{ profile: IProfile; token: string }>
+      action: PayloadAction<{
+        profile: IProfile;
+        accessToken?: string;
+        token?: string;
+      }>
     ) {
       state.isLoading = false;
       state.loggedIn = true;
       state.profile = action.payload.profile;
       state.error = null;
-      action.payload.token &&
-        localStorage.setItem("accessToken", action?.payload.token);
+      const token = action.payload.accessToken || action.payload.token;
+      token && localStorage.setItem("accessToken", token);
     },
 
     loginFailure(state, action: PayloadAction<string>) {

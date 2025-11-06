@@ -134,16 +134,27 @@ const ModalContract = () => {
   });
 
   const { totalPrice, remainingAmount, profitPrice } = useMemo(() => {
+    // Umumiy narx = Oldindan to'lov + (Oylik to'lov × Muddat)
     const total =
       formValues.initialPayment + formValues.monthlyPayment * formValues.period;
-    const remaining = total - formValues.initialPayment;
-    const profit = total - formValues.price;
+
+    // Qolgan summa = Oylik to'lov × Muddat
+    const remaining = formValues.monthlyPayment * formValues.period;
+
+    // Foyda = Umumiy narx - Asl narx
+    const profit = total - formValues.originalPrice;
+
     return {
       totalPrice: total,
       remainingAmount: remaining,
       profitPrice: profit,
     };
-  }, [formValues.monthlyPayment]);
+  }, [
+    formValues.initialPayment,
+    formValues.monthlyPayment,
+    formValues.period,
+    formValues.originalPrice,
+  ]);
 
   const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, type, value, checked } = e.target;
@@ -170,18 +181,21 @@ const ModalContract = () => {
   }, [dispatch, defaultFormValues]);
 
   const handleMonthlyCalculate = useCallback(() => {
-    const monthly =
-      (formValues.price +
-        formValues.price * (formValues.percentage / 100) -
-        formValues.initialPayment) /
-      formValues.period;
+    // Formula: Oylik to'lov = (Sotuv narxi + Foiz - Oldindan to'lov) / Muddat
+    // Qolgan summa = Sotuv narxi - Oldindan to'lov
+    const remainingAfterInitial = formValues.price - formValues.initialPayment;
+
+    // Foizli summa = Qolgan summa + (Qolgan summa × Foiz / 100)
+    const amountWithInterest =
+      remainingAfterInitial +
+      remainingAfterInitial * (formValues.percentage / 100);
+
+    // Oylik to'lov = Foizli summa / Muddat
+    const monthly = amountWithInterest / formValues.period;
 
     setFormValues((prev) => ({
       ...prev,
       monthlyPayment: Number(monthly.toFixed(2)),
-      totalPrice:
-        formValues.initialPayment +
-        Number(monthly.toFixed(2)) * formValues.period,
     }));
   }, [
     formValues.price,
@@ -223,12 +237,11 @@ const ModalContract = () => {
       formValues.percentage >= 0 &&
       formValues.period > 0 &&
       formValues.monthlyPayment > 0 &&
-      formValues.profitPrice >= 0 &&
       formValues.initialPaymentDueDate !== "" &&
       formValues.notes.trim() !== "" &&
       formValues.price >= formValues.originalPrice &&
-      !isTouched,
-    [formValues, isTouched]
+      (contractModal?.type === "edit" || !isTouched),
+    [formValues, isTouched, contractModal?.type]
   );
 
   useEffect(() => {
@@ -241,17 +254,18 @@ const ModalContract = () => {
         originalPrice: contract.data?.originalPrice || 0,
         price: contract.data?.price || 0,
         initialPayment: contract.data?.initialPayment || 0,
-        percentage: contract.data?.customer?.percent || 0,
+        percentage:
+          contract.data?.percentage || contract.data?.customer?.percent || 30,
         period: contract.data?.period || 12,
         initialPaymentDueDate:
           contract.data?.initialPaymentDueDate.split("T")[0] || "",
         monthlyPayment: contract.data?.monthlyPayment || 0,
         notes: contract.data?.notes || "",
-        box: contract.data?.info.box || false,
-        mbox: contract.data?.info.mbox || false,
-        receipt: contract.data?.info.receipt || false,
-        iCloud: contract.data?.info.iCloud || false,
-        totalPrice: 0,
+        box: contract.data?.info?.box || false,
+        mbox: contract.data?.info?.mbox || false,
+        receipt: contract.data?.info?.receipt || false,
+        iCloud: contract.data?.info?.iCloud || false,
+        totalPrice: contract.data?.totalPrice || 0,
         remainingAmount: 0,
         profitPrice: 0,
         startDate: contract.data?.startDate.toString().split("T")[0] || "",

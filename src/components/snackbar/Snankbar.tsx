@@ -21,7 +21,10 @@ const Snackbar: React.FC = () => {
   useEffect(() => {
     if (messages.length > 0) {
       const { message, options } = messages[0];
-      enqueueSnackbar(message, options);
+      // Faqat message mavjud bo'lsa enqueue qilish
+      if (message) {
+        enqueueSnackbar(message, options);
+      }
       dispatch(removeSnackbar());
     }
   }, [dispatch, enqueueSnackbar, messages]);

@@ -14,10 +14,14 @@ import {
   Chip,
   Box,
   CircularProgress,
+  Stack,
+  Link,
+  Tooltip,
 } from "@mui/material";
 import { format } from "date-fns";
 import { getPaymentHistory } from "src/store/actions/paymentActions";
 import { useAppDispatch } from "src/hooks/useAppDispatch";
+import { Iconify } from "src/components/iconify";
 
 interface PaymentHistoryProps {
   customerId?: string;
@@ -33,6 +37,13 @@ interface PaymentItem {
   managerName: string;
   notes: string;
   source?: string;
+  status?: "PAID" | "PENDING" | "REJECTED" | "UNDERPAID" | "OVERPAID";
+  paymentType?: "initial" | "monthly" | "extra";
+  remainingAmount?: number;
+  excessAmount?: number;
+  expectedAmount?: number;
+  linkedPaymentId?: string;
+  prepaidAmount?: number;
 }
 
 const PaymentHistory: React.FC<PaymentHistoryProps> = ({
@@ -75,6 +86,55 @@ const PaymentHistory: React.FC<PaymentHistoryProps> = ({
     return format(new Date(dateString), "dd.MM.yyyy HH:mm");
   };
 
+  const getStatusColor = (
+    status?: string
+  ): "success" | "warning" | "error" | "info" | "default" => {
+    switch (status) {
+      case "PAID":
+        return "success";
+      case "UNDERPAID":
+        return "error";
+      case "OVERPAID":
+        return "success";
+      case "PENDING":
+        return "warning";
+      case "REJECTED":
+        return "error";
+      default:
+        return "default";
+    }
+  };
+
+  const getStatusLabel = (status?: string): string => {
+    switch (status) {
+      case "PAID":
+        return "To'langan";
+      case "UNDERPAID":
+        return "Kam to'langan";
+      case "OVERPAID":
+        return "Ko'p to'langan";
+      case "PENDING":
+        return "Kutilmoqda";
+      case "REJECTED":
+        return "Rad etilgan";
+      default:
+        return "Noma'lum";
+    }
+  };
+
+  const getPaymentTypeLabel = (type?: string): string => {
+    switch (type) {
+      case "initial":
+        return "Boshlang'ich";
+      case "monthly":
+        return "Oylik";
+      case "extra":
+        return "Qo'shimcha";
+      default:
+        return "-";
+    }
+  };
+
   if (loading) {
     return (
       <Card>
@@ -114,11 +174,11 @@ const PaymentHistory: React.FC<PaymentHistoryProps> = ({
               <TableHead>
                 <TableRow>
                   <TableCell>Sana</TableCell>
-                  <TableCell>Mijoz</TableCell>
+                  <TableCell>Turi</TableCell>
                   <TableCell>Summa</TableCell>
-                  <TableCell>Manager</TableCell>
+                  <TableCell>Status</TableCell>
+                  <TableCell>Tafsilotlar</TableCell>
                   <TableCell>Izoh</TableCell>
-                  <TableCell>Manba</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -130,42 +190,117 @@ const PaymentHistory: React.FC<PaymentHistoryProps> = ({
                       </Typography>
                     </TableCell>
                     <TableCell>
-                      <Typography variant="body2" fontWeight="medium">
-                        {payment.customerName}
-                      </Typography>
+                      <Chip
+                        label={getPaymentTypeLabel(payment.paymentType)}
+                        size="small"
+                        variant="outlined"
+                        color={
+                          payment.paymentType === "extra" ? "warning" : "info"
+                        }
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <Stack spacing={0.5}>
+                        <Typography
+                          variant="body2"
+                          fontWeight="bold"
+                          color="success.main"
+                        >
+                          {formatCurrency(payment.amount)}
+                        </Typography>
+                        {payment.expectedAmount &&
+                          payment.expectedAmount !== payment.amount && (
+                            <Typography
+                              variant="caption"
+                              color="text.secondary"
+                            >
+                              Kutilgan: {formatCurrency(payment.expectedAmount)}
+                            </Typography>
+                          )}
+                      </Stack>
+                    </TableCell>
+                    <TableCell>
+                      <Chip
+                        label={getStatusLabel(payment.status)}
+                        size="small"
+                        color={getStatusColor(payment.status)}
+                        icon={
+                          payment.status === "PAID" ? (
+                            <Iconify icon="mdi:check-circle" />
+                          ) : payment.status === "UNDERPAID" ? (
+                            <Iconify icon="mdi:alert-circle" />
+                          ) : payment.status === "OVERPAID" ? (
+                            <Iconify icon="mdi:check-circle" />
+                          ) : undefined
+                        }
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <Stack spacing={0.5}>
+                        {payment.status === "UNDERPAID" &&
+                          payment.remainingAmount && (
+                            <Tooltip title="Yetishmayapti">
+                              <Chip
+                                label={`-${formatCurrency(payment.remainingAmount)}`}
+                                size="small"
+                                color="error"
+                                variant="outlined"
+                                icon={<Iconify icon="mdi:minus-circle" />}
+                              />
+                            </Tooltip>
+                          )}
+                        {payment.status === "OVERPAID" &&
+                          payment.excessAmount && (
+                            <Tooltip title="Ortiqcha (keyingi oyga o'tkazildi)">
+                              <Chip
+                                label={`+${formatCurrency(payment.excessAmount)}`}
+                                size="small"
+                                color="success"
+                                variant="outlined"
+                                icon={<Iconify icon="mdi:plus-circle" />}
+                              />
+                            </Tooltip>
+                          )}
+                        {payment.prepaidAmount && payment.prepaidAmount > 0 && (
+                          <Tooltip title="Oldindan to'langan">
+                            <Chip
+                              label={`Oldindan: ${formatCurrency(payment.prepaidAmount)}`}
+                              size="small"
+                              color="info"
+                              variant="outlined"
+                              icon={<Iconify icon="mdi:arrow-down-circle" />}
+                            />
+                          </Tooltip>
+                        )}
+                        {payment.linkedPaymentId && (
+                          <Link
+                            href={`#payment-${payment.linkedPaymentId}`}
+                            variant="caption"
+                            sx={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 0.5,
+                            }}
+                          >
+                            <Iconify icon="mdi:link" width={14} />
+                            Bog'langan to'lov
+                          </Link>
+                        )}
+                      </Stack>
                     </TableCell>
                     <TableCell>
                       <Typography
                         variant="body2"
-                        fontWeight="bold"
-                        color="success.main"
+                        color="text.secondary"
+                        sx={{
+                          maxWidth: 200,
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap",
+                        }}
                       >
-                        {formatCurrency(payment.amount)}
-                      </Typography>
-                    </TableCell>
-                    <TableCell>
-                      <Typography variant="body2">
-                        {payment.managerName}
-                      </Typography>
-                    </TableCell>
-                    <TableCell>
-                      <Typography variant="body2" color="text.secondary">
                         {payment.notes || "-"}
                       </Typography>
-                    </TableCell>
-                    <TableCell>
-                      <Chip
-                        label={
-                          payment.source === "debtor"
-                            ? "Qarzdorlik"
-                            : "To'g'ridan-to'g'ri"
-                        }
-                        size="small"
-                        color={
-                          payment.source === "debtor" ? "warning" : "primary"
-                        }
-                        variant="outlined"
-                      />
                     </TableCell>
                   </TableRow>
                 ))}

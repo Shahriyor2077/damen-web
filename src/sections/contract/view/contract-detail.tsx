@@ -17,6 +17,7 @@ import Loader from "src/components/loader/Loader";
 import CustomerInfo from "src/components/customer-infos/customerInfo";
 import { PaymentSchedule } from "src/components/payment-schedule";
 import PayCommentModal from "src/components/render-payment-history/pay-comment-modal";
+import { EditHistoryTimeline } from "src/components/edit-history-timeline";
 
 import Calculate from "./calculate";
 
@@ -100,6 +101,13 @@ const ContractDetails = () => {
             />
           )}
         </Grid>
+
+        {/* Edit History Timeline */}
+        {contract?.editHistory && contract.editHistory.length > 0 && (
+          <Grid xs={12}>
+            <EditHistoryTimeline editHistory={contract.editHistory} />
+          </Grid>
+        )}
       </Grid>
       <PayCommentModal
         open={selectedComment}

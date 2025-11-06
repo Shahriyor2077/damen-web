@@ -3,10 +3,17 @@ import type { ICustomer } from "./customer";
 export interface IPayment {
   amount: number;
   date: Date;
-  method: string;
+  method?: string;
   isPaid: boolean;
+  paymentType: "initial" | "monthly" | "extra"; // YANGI
   notes: string;
   _id: string;
+  status?: "PAID" | "PENDING" | "REJECTED" | "UNDERPAID" | "OVERPAID"; // YANGI
+  confirmedAt?: Date; // YANGI
+  confirmedBy?: string; // YANGI
+  remainingAmount?: number;
+  excessAmount?: number;
+  expectedAmount?: number;
 }
 
 export interface IContractInfo {
@@ -14,6 +21,33 @@ export interface IContractInfo {
   mbox: boolean;
   receipt: boolean;
   iCloud: boolean;
+}
+
+export interface IContractChange {
+  field: string;
+  oldValue: number;
+  newValue: number;
+  difference: number;
+}
+
+export interface IImpactSummary {
+  underpaidCount: number;
+  overpaidCount: number;
+  totalShortage: number;
+  totalExcess: number;
+  additionalPaymentsCreated: number;
+}
+
+export interface IContractEdit {
+  date: string;
+  editedBy: {
+    _id: string;
+    firstName: string;
+    lastName: string;
+  };
+  changes: IContractChange[];
+  affectedPayments: string[];
+  impactSummary: IImpactSummary;
 }
 
 export interface IContract {
@@ -40,6 +74,10 @@ export interface IContract {
   status: "active" | "completed" | "cancelled";
   payments: IPayment[] | [];
   info: IContractInfo;
+
+  // YANGI FIELDLAR
+  prepaidBalance?: number;
+  editHistory?: IContractEdit[];
 }
 
 export interface IAddContract {

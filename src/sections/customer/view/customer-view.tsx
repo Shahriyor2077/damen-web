@@ -3,6 +3,7 @@ import type { RootState } from "src/store";
 import { useSelector } from "react-redux";
 import { RiUploadCloud2Fill } from "react-icons/ri";
 import { memo, useRef, useState, useEffect } from "react";
+import { enqueueSnackbar } from "notistack";
 
 import {
   Box,
@@ -13,10 +14,12 @@ import {
   Button,
   Tooltip,
   Typography,
+  CircularProgress,
 } from "@mui/material";
 
 import { useAppDispatch } from "src/hooks/useAppDispatch";
 
+import authApi from "src/server/auth";
 import { setModal } from "src/store/slices/modalSlice";
 import { DashboardContent } from "src/layouts/dashboard";
 import { setCustomerId } from "src/store/slices/customerSlice";
@@ -73,6 +76,7 @@ const CustomerView = () => {
   }, [dispatch]);
 
   const [tab, setTab] = useState(0);
+  const [uploading, setUploading] = useState(false);
 
   const handleChangeTab = (event: React.SyntheticEvent, newValue: number) => {
     setTab(newValue);
@@ -82,6 +86,97 @@ const CustomerView = () => {
 
   const handleImportClick = () => {
     fileInputRef.current?.click();
+  };
+
+  const handleFileUpload = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Fayl formatini tekshirish
+    const validTypes = [
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      "application/vnd.ms-excel",
+    ];
+
+    if (!validTypes.includes(file.type)) {
+      enqueueSnackbar("Faqat Excel fayllar (.xlsx, .xls) qabul qilinadi", {
+        variant: "error",
+      });
+      return;
+    }
+
+    // Fayl hajmini tekshirish (10MB)
+    if (file.size > 10 * 1024 * 1024) {
+      enqueueSnackbar("Fayl hajmi 10MB dan oshmasligi kerak", {
+        variant: "error",
+      });
+      return;
+    }
+
+    setUploading(true);
+
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const response = await authApi.post("/excel/import", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      if (response.data.success) {
+        enqueueSnackbar(response.data.message, {
+          variant: "success",
+        });
+
+        // Statistikani ko'rsatish
+        const { stats } = response.data;
+        enqueueSnackbar(
+          `Yaratildi: ${stats.contractsCreated} ta shartnoma, ${stats.customersCreated} ta yangi mijoz`,
+          {
+            variant: "info",
+          }
+        );
+
+        // Mijozlar ro'yxatini yangilash
+        dispatch(getCustomers());
+        dispatch(getNewCustomers());
+      } else {
+        enqueueSnackbar(response.data.message, {
+          variant: "warning",
+        });
+
+        // Xatoliklarni ko'rsatish
+        if (response.data.errors && response.data.errors.length > 0) {
+          response.data.errors.slice(0, 3).forEach((error: any) => {
+            enqueueSnackbar(
+              `Qator ${error.row} (${error.customer}): ${error.error}`,
+              {
+                variant: "error",
+              }
+            );
+          });
+        }
+      }
+    } catch (error: any) {
+      console.error("Excel import error:", error);
+      enqueueSnackbar(
+        error.response?.data?.message ||
+          "Excel import qilishda xatolik yuz berdi",
+        {
+          variant: "error",
+        }
+      );
+    } finally {
+      setUploading(false);
+      // Input'ni tozalash (bir xil faylni qayta yuklash uchun)
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    }
   };
 
   if (customers.length === 0 && isLoading) {
@@ -102,18 +197,25 @@ const CustomerView = () => {
             <Button
               variant="contained"
               color="primary"
-              startIcon={<RiUploadCloud2Fill />}
+              startIcon={
+                uploading ? (
+                  <CircularProgress size={20} color="inherit" />
+                ) : (
+                  <RiUploadCloud2Fill />
+                )
+              }
               onClick={handleImportClick}
+              disabled={uploading}
               sx={{ ml: 2 }}
             >
-              Import
+              {uploading ? "Yuklanmoqda..." : "Import"}
             </Button>
           </Tooltip>
           <input
             type="file"
             ref={fileInputRef}
-            // onChange={handleFileUpload}
-            accept=".xlsx, .xls, .csv"
+            onChange={handleFileUpload}
+            accept=".xlsx, .xls"
             style={{ display: "none" }}
           />
 

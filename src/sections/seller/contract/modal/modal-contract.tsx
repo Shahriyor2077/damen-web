@@ -178,16 +178,27 @@ const ModalContract = () => {
   });
 
   const { totalPrice, remainingAmount, profitPrice } = useMemo(() => {
+    // Umumiy narx = Oldindan to'lov + (Oylik to'lov × Muddat)
     const total =
       formValues.initialPayment + formValues.monthlyPayment * formValues.period;
-    const remaining = total - formValues.initialPayment;
-    const profit = total - formValues.price;
+
+    // Qolgan summa = Oylik to'lov × Muddat
+    const remaining = formValues.monthlyPayment * formValues.period;
+
+    // Foyda = Umumiy narx - Asl narx
+    const profit = total - formValues.originalPrice;
+
     return {
       totalPrice: total,
       remainingAmount: remaining,
       profitPrice: profit,
     };
-  }, [formValues.monthlyPayment]);
+  }, [
+    formValues.initialPayment,
+    formValues.monthlyPayment,
+    formValues.period,
+    formValues.originalPrice,
+  ]);
 
   const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, type, value, checked } = e.target;
@@ -214,18 +225,36 @@ const ModalContract = () => {
   }, [dispatch, defaultFormValues]);
 
   const handleMonthlyCalculate = useCallback(() => {
-    const monthly =
-      (formValues.price +
-        formValues.price * (formValues.percentage / 100) -
-        formValues.initialPayment) /
-      formValues.period;
+    // FORMULA:
+    // 1. Qolgan summa = Sotuv narxi - Initial Payment
+    // 2. Foizli summa = Qolgan + (Qolgan × Foiz / 100)
+    // 3. Oylik to'lov = Foizli summa / Muddat
+    // 4. Umumiy narx = Initial Payment + (Oylik × Muddat)
+
+    const remainingPrice = formValues.price - formValues.initialPayment;
+    const withInterest =
+      remainingPrice + (remainingPrice * formValues.percentage) / 100;
+    const monthly = withInterest / formValues.period;
+
+    const calculatedMonthly = Number(monthly.toFixed(2));
+    const calculatedTotal =
+      formValues.initialPayment + calculatedMonthly * formValues.period;
+
+    console.log("📊 Hisob-kitob:", {
+      "Sotuv narxi": formValues.price,
+      "Initial Payment": formValues.initialPayment,
+      Qolgan: remainingPrice,
+      Foiz: formValues.percentage + "%",
+      "Foizli summa": withInterest,
+      Muddat: formValues.period + " oy",
+      "Oylik to'lov": calculatedMonthly,
+      "Umumiy narx": calculatedTotal,
+    });
 
     setFormValues((prev) => ({
       ...prev,
-      monthlyPayment: Number(monthly.toFixed(2)),
-      totalPrice:
-        formValues.initialPayment +
-        Number(monthly.toFixed(2)) * formValues.period,
+      monthlyPayment: calculatedMonthly,
+      totalPrice: calculatedTotal,
     }));
   }, [
     formValues.price,

@@ -15,6 +15,18 @@ export interface ICash {
   status: string;
   overdueDays: number;
   notes: string;
-  currencyDetails: CurrencyDetails;
-  currencyCourse: number;
+  currencyDetails?: CurrencyDetails; // YANGI - optional
+  currencyCourse?: number; // YANGI - optional
+}
+
+// Yangi interface - Debtor uchun
+export interface IDebtor {
+  _id: string;
+  contractId: string;
+  debtAmount: number;
+  dueDate: Date; // YANGI
+  overdueDays: number; // YANGI
+  createBy: string;
+  createdAt: Date;
+  updatedAt: Date;
 }

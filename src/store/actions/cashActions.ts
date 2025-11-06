@@ -9,8 +9,11 @@ export const getCashs = (): AppThunk => async (dispatch) => {
   try {
     const res = await authApi.get("/cash/get-all");
     const { data } = res;
+    console.log("📊 Cash data received:", data);
+    console.log("📊 Total items:", data?.length || 0);
     dispatch(setCashs(data));
   } catch (error: any) {
+    console.error("❌ Error fetching cash:", error);
     dispatch(failure());
   }
 };
