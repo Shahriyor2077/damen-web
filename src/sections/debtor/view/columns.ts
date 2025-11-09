@@ -39,20 +39,15 @@ export const columnsDebtor: Column[] = [
 
 export const columnsContract: Column[] = [
   {
-    id: "fullName",
-    label: "Ism-Familiya",
-    sortable: true,
-    // renderCell: (row) => {
-    //   const currency = row.currency === "usd" ? "$" : "so'm";
-    //   return `${row.initialPaymentDueDate} ${row.customerName}`;
-    // },
+    id: "contractDay",
+    label: "Kun",
+    sortable: false,
     renderCell: (row) => {
-      const day = new Date(row.startDate).getDate(); // faqat kunni oladi
-      return `${day} ${row.fullName}`;
+      const day = new Date(row.startDate).getDate();
+      return day.toString();
     },
   },
-  // { id: "fullName", label: "Ism-Familiya", sortable: true },
-  // { id: "phoneNumber", label: "Telefon raqami", sortable: true },
+  { id: "fullName", label: "Ism-Familiya", sortable: true },
   { id: "productName", label: "Mahsulot nomi", sortable: true },
   {
     id: "totalPrice",
@@ -92,6 +87,25 @@ export const columnsContract: Column[] = [
 
     sortable: true,
   },
-  { id: "delayDays", label: "Kechikish kunlari", sortable: true },
+  {
+    id: "delayDays",
+    label: "Kechikish kunlari",
+    sortable: true,
+    renderCell: (row) => {
+      const delayDays = row.delayDays || 0;
+
+      if (delayDays <= 0) {
+        return "—";
+      }
+
+      // Rang va emoji
+      if (delayDays > 30) {
+        return `🔴 ${delayDays} kun`;
+      } else if (delayDays > 7) {
+        return `🟡 ${delayDays} kun`;
+      }
+      return `🟢 ${delayDays} kun`;
+    },
+  },
   { id: "manager", label: "Menejer", sortable: true },
 ];

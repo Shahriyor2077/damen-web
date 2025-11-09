@@ -12,6 +12,7 @@ import { CashView } from "./cash-view";
 // import { ModalCash } from "../modal/modal-cash";
 import ModalCash from "../modal/modal-cash";
 import ModalCashInfo from "../modal/modal-cash-info";
+import ModalCashReject from "../modal/modal-cash-reject";
 // import { UserDetails } from "./user-detail";
 // import ModalUserCourses from "../modal/modal-user-course";
 // import ModalUserTutorials from "../modal/modal-user-tutorial";
@@ -39,6 +40,7 @@ export function CashesView() {
       <ModalUserTutorials /> */}
       <ModalCash />
       <ModalCashInfo />
+      <ModalCashReject />
     </>
   );
 }

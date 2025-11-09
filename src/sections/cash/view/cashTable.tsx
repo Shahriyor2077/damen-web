@@ -1,4 +1,4 @@
-import type { ICash } from "src/types/cash";
+import type { IPayment } from "src/types/cash";
 import type { Column } from "src/components/table/types";
 
 import { useTableLogic } from "src/hooks/useTableLogic";
@@ -6,13 +6,13 @@ import { useTableLogic } from "src/hooks/useTableLogic";
 import { GenericTable } from "src/components/table/GnericTable";
 
 interface ChashTableProps {
-  data: ICash[];
+  data: IPayment[];
   columns: Column[];
-  onRowClick?: (row: ICash) => void;
+  onRowClick?: (row: IPayment) => void;
   selectable?: boolean;
   setSelectedRows?: (selected: string[]) => void;
   component?: React.ReactNode;
-  renderActions: (row: ICash) => React.ReactNode;
+  renderActions: (row: IPayment) => React.ReactNode;
 }
 
 const ChashTable = ({
@@ -24,7 +24,7 @@ const ChashTable = ({
   component,
   renderActions,
 }: ChashTableProps) => {
-  const logic = useTableLogic<ICash>(data, columns);
+  const logic = useTableLogic<IPayment>(data, columns);
 
   return (
     <GenericTable

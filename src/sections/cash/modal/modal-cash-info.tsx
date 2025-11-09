@@ -1,160 +1,5 @@
-// import type { RootState } from "src/store";
-
-// import { useCallback } from "react";
-// import { useSelector } from "react-redux";
-// import { MdCancel, MdCheckCircle } from "react-icons/md";
-
-// import {
-//   Box,
-//   Chip,
-//   List,
-//   Stack,
-//   Button,
-//   Dialog,
-//   Avatar,
-//   Tooltip,
-//   Divider,
-//   ListItem,
-//   Typography,
-//   DialogTitle,
-//   ListItemText,
-//   DialogActions,
-//   DialogContent,
-// } from "@mui/material";
-
-// import { useAppDispatch } from "src/hooks/useAppDispatch";
-
-// import { closeModal } from "src/store/slices/modalSlice";
-// import authApi from "src/server/auth";
-
-// const ModalCashInfo = () => {
-//   const dispatch = useAppDispatch();
-//   const { cashInfoModal } = useSelector((state: RootState) => state.modal);
-//   const cash = cashInfoModal.data;
-//   const res = await authApi.get(`/customer/get-customer-by-id/${id}`);
-
-//   const { data } = res;
-
-//   const customer = data;
-
-//   const handleClose = useCallback(() => {
-//     dispatch(closeModal("cashInfoModal"));
-//   }, [dispatch]);
-
-//   return (
-//     <Dialog open={!!cashInfoModal?.type} maxWidth="md" fullWidth>
-//       <DialogTitle>Yangi To‘lov Qo‘shish</DialogTitle>
-//       <DialogContent>
-//         <Stack spacing={3}>
-//           <Stack
-//             direction="row"
-//             justifyContent="space-between"
-//             alignItems="center"
-//             gap={2}
-//           >
-//             <Stack direction="row" spacing={2} alignItems="center">
-//               <Avatar
-//                 sx={{ width: 50, height: 50 }}
-//                 alt={customer?.firstName}
-//               />
-//               <Typography variant="h6">{`${customer?.firstName} ${customer?.lastName}`}</Typography>
-//               {customer?.isActive ? (
-//                 <Tooltip title="Tasdiqlangan mijoz" placement="top">
-//                   <Typography>
-//                     <MdCheckCircle color="green" />
-//                   </Typography>
-//                 </Tooltip>
-//               ) : (
-//                 <Tooltip title="Hali tasdiqlanmagan" placement="top">
-//                   <Typography>
-//                     <MdCancel color="red" />
-//                   </Typography>
-//                 </Tooltip>
-//               )}
-//             </Stack>
-//           </Stack>
-
-//           <List dense>
-//             <ListItem>
-//               <ListItemText
-//                 primary="Passport seriyasi"
-//                 secondary={customer?.passportSeries || "___"}
-//               />
-//             </ListItem>
-//             <Divider component="li" />
-//             <ListItem>
-//               <ListItemText
-//                 primary="Telefon raqami"
-//                 secondary={customer?.phoneNumber || "___"}
-//               />
-//             </ListItem>
-//             <Divider component="li" />
-//             <ListItem>
-//               <ListItemText
-//                 primary="Tug'ilgan sana"
-//                 secondary={
-//                   customer?.birthDate
-//                     ? new Date(customer?.birthDate).toLocaleDateString()
-//                     : "___"
-//                 }
-//               />
-//             </ListItem>
-
-//             <Divider component="li" />
-//             <ListItem>
-//               <ListItemText
-//                 primary="Telegram"
-//                 secondary={
-//                   customer?.telegramId ? `@${customer?.telegramId}` : "___"
-//                 }
-//               />
-//             </ListItem>
-//             <Divider component="li" />
-//             <ListItem>
-//               <ListItemText
-//                 primary="Manzil"
-//                 secondary={customer?.address || "___"}
-//               />
-//             </ListItem>
-//             <Divider component="li" />
-//             <ListItem>
-//               <ListItemText
-//                 primary="Mas'ul menejer"
-//                 secondary={
-//                   <Box sx={{ display: "inline-block", p: 0 }}>
-//                     <Chip
-//                       avatar={<Avatar src={undefined} />}
-//                       label={`${customer?.manager?.firstName || "___"} ${customer?.manager?.lastName || "___"}`}
-//                       variant="outlined"
-//                       sx={{ mt: 1, cursor: "pointer", m: 0 }}
-//                       // onClick={(e) => {
-//                       //   e.stopPropagation();
-//                       //   if (customer?.manager._id) {
-//                       //     dispatch(setEmployeeId(customer?.manager?._id));
-//                       //     navigate("/admin/employee");
-//                       //   }
-//                       // }}
-//                     />
-//                   </Box>
-//                 }
-//               />
-//             </ListItem>
-//           </List>
-//         </Stack>
-//       </DialogContent>
-
-//       <DialogActions>
-//         <Button color="error" onClick={handleClose}>
-//           Bekor qilish
-//         </Button>
-//         <Button type="submit">Saqlash</Button>
-//       </DialogActions>
-//     </Dialog>
-//   );
-// };
-
-// export default ModalCashInfo;
 import type { RootState } from "src/store";
+import type { IPayment } from "src/types/cash";
 
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
@@ -191,95 +36,144 @@ const ModalCashInfo = () => {
   const navigate = useNavigate();
 
   const { cashInfoModal } = useSelector((state: RootState) => state.modal);
+  const { profile } = useSelector((state: RootState) => state.auth);
 
-  const [customer, setCustomer] = useState<any>(null);
+  const [contract, setContract] = useState<any>(null);
   const [loading, setLoading] = useState(false);
 
-  const id = cashInfoModal?.data?.customerId; // modalga o‘tgan mijoz ID
+  // Get payment data from modal
+  const payment = cashInfoModal?.data?.data as any;
+
+  // Extract contractId from payment
+  const contractId = payment?.contractId;
 
   const handleClose = useCallback(() => {
     dispatch(closeModal("cashInfoModal"));
+    setContract(null); // Reset contract data on close
   }, [dispatch]);
 
   useEffect(() => {
-    if (!id) return;
-    const fetchCustomer = async () => {
+    // Debug: payment obyektini ko'rish
+    // console.log("🔍 === MODAL OPENED ===");
+    // console.log("🔍 cashInfoModal:", cashInfoModal);
+    // console.log("🔍 Payment data:", payment);
+    // console.log("🔍 Contract ID:", contractId);
+
+    // Fetch contract data
+    if (!contractId) {
+      // console.log("⚠️ No contract ID found in payment");
+      // console.log(
+      //   "⚠️ Payment keys:",
+      //   payment ? Object.keys(payment) : "payment is null"
+      // );
+      // console.log("⚠️ Payment._id:", payment?._id);
+      // console.log("⚠️ Payment.contractId:", payment?.contractId);
+      return;
+    }
+
+    const fetchContract = async () => {
       try {
         setLoading(true);
-        const res = await authApi.get(`/customer/get-customer-by-id/${id}`);
-        setCustomer(res.data);
-      } catch (error) {
-        console.error("Error fetching customer:", error);
+        // console.log("🔍 Fetching contract data for ID:", contractId);
+        const res = await authApi.get(
+          `/contract/get-contract-by-id/${contractId}`
+        );
+        // console.log("✅ Contract API response:", res);
+        setContract(res.data);
+        // console.log("✅ Contract data loaded:", res.data);
+      } catch (error: any) {
+        console.error("❌ Error fetching contract:", error);
+        // console.error("❌ Error response:", error.response?.data);
+        // console.error("❌ Error status:", error.response?.status);
       } finally {
         setLoading(false);
       }
     };
-    fetchCustomer();
-  }, [id]);
+    fetchContract();
+  }, [contractId]);
 
   return (
-    <Dialog open={!!cashInfoModal?.type} maxWidth="md" fullWidth>
-      <DialogTitle>Yangi To‘lov Qo‘shish</DialogTitle>
+    <Dialog
+      open={!!cashInfoModal?.type}
+      maxWidth="md"
+      fullWidth
+      onClose={handleClose}
+    >
+      <DialogTitle>Shartnoma Ma'lumotlari</DialogTitle>
       <DialogContent>
         {loading ? (
           <Stack alignItems="center" justifyContent="center" p={4}>
             <CircularProgress />
+            <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
+              Shartnoma ma'lumotlari yuklanmoqda...
+            </Typography>
+          </Stack>
+        ) : !contract ? (
+          <Stack alignItems="center" justifyContent="center" p={4}>
+            <Typography variant="body1" color="text.secondary">
+              Shartnoma ma'lumotlari topilmadi
+            </Typography>
           </Stack>
         ) : (
-          <Stack spacing={3}>
-            <Stack
-              direction="row"
-              justifyContent="space-between"
-              alignItems="center"
-              gap={2}
-            >
+          <Stack spacing={3} sx={{ mt: 2 }}>
+            {/* Mijoz ma'lumotlari */}
+            <Stack spacing={1}>
+              <Typography variant="subtitle2" color="text.secondary">
+                Mijoz
+              </Typography>
               <Stack direction="row" spacing={2} alignItems="center">
-                <Avatar
-                  sx={{ width: 50, height: 50 }}
-                  alt={customer?.firstName}
-                />
-                <Typography variant="h6">
-                  {customer
-                    ? `${customer?.firstName} ${customer?.lastName}`
-                    : "___"}
+                <Avatar sx={{ width: 40, height: 40 }} />
+                <Typography variant="body1">
+                  {contract?.customer?.firstName} {contract?.customer?.lastName}
                 </Typography>
-                {customer?.isActive ? (
-                  <Tooltip title="Tasdiqlangan mijoz" placement="top">
-                    <Typography>
-                      <MdCheckCircle color="green" />
-                    </Typography>
-                  </Tooltip>
-                ) : (
-                  <Tooltip title="Hali tasdiqlanmagan" placement="top">
-                    <Typography>
-                      <MdCancel color="red" />
-                    </Typography>
-                  </Tooltip>
-                )}
               </Stack>
             </Stack>
 
+            <Divider />
+
+            {/* Shartnoma ma'lumotlari */}
             <List dense>
               <ListItem>
                 <ListItemText
-                  primary="Passport seriyasi"
-                  secondary={customer?.passportSeries || "___"}
+                  primary="Mahsulot nomi"
+                  secondary={contract?.productName || "___"}
                 />
               </ListItem>
               <Divider component="li" />
               <ListItem>
                 <ListItemText
-                  primary="Telefon raqami"
-                  secondary={customer?.phoneNumber || "___"}
+                  primary="Umumiy narx"
+                  secondary={`${contract?.totalPrice?.toLocaleString() || "0"} $`}
                 />
               </ListItem>
               <Divider component="li" />
               <ListItem>
                 <ListItemText
-                  primary="Tug'ilgan sana"
+                  primary="Boshlang'ich to'lov"
+                  secondary={`${contract?.initialPayment?.toLocaleString() || "0"} $`}
+                />
+              </ListItem>
+              <Divider component="li" />
+              <ListItem>
+                <ListItemText
+                  primary="Oylik to'lov"
+                  secondary={`${contract?.monthlyPayment?.toLocaleString() || "0"} $`}
+                />
+              </ListItem>
+              <Divider component="li" />
+              <ListItem>
+                <ListItemText
+                  primary="Muddat"
+                  secondary={`${contract?.duration || "0"} oy`}
+                />
+              </ListItem>
+              <Divider component="li" />
+              <ListItem>
+                <ListItemText
+                  primary="Boshlanish sanasi"
                   secondary={
-                    customer?.birthDate
-                      ? new Date(customer?.birthDate).toLocaleDateString()
+                    contract?.startDate
+                      ? new Date(contract.startDate).toLocaleDateString("uz-UZ")
                       : "___"
                   }
                 />
@@ -287,53 +181,45 @@ const ModalCashInfo = () => {
               <Divider component="li" />
               <ListItem>
                 <ListItemText
-                  primary="Telegram"
+                  primary="Tugash sanasi"
                   secondary={
-                    customer?.telegramId ? `@${customer?.telegramId}` : "___"
+                    contract?.endDate
+                      ? new Date(contract.endDate).toLocaleDateString("uz-UZ")
+                      : "___"
                   }
                 />
               </ListItem>
               <Divider component="li" />
               <ListItem>
                 <ListItemText
-                  primary="Manzil"
-                  secondary={customer?.address || "___"}
-                />
-              </ListItem>
-              <Divider component="li" />
-              <ListItem>
-                <ListItemText
-                  primary="Mas'ul menejer"
+                  primary="Holat"
                   secondary={
-                    <Box sx={{ display: "inline-block", p: 0 }}>
-                      <Chip
-                        avatar={<Avatar src={undefined} />}
-                        label={`${customer?.manager?.firstName || "___"} ${
-                          customer?.manager?.lastName || "___"
-                        }`}
-                        variant="outlined"
-                        // sx={{ mt: 1, cursor: "pointer", m: 0 }}
-                      />
-                    </Box>
+                    <Chip
+                      label={contract?.status || "___"}
+                      color={
+                        contract?.status === "ACTIVE" ? "success" : "default"
+                      }
+                      size="small"
+                    />
                   }
                 />
               </ListItem>
-              <Button
-                variant="contained"
-                sx={{ mt: 2 }}
-                fullWidth
-                onClick={(e) => {
-                  e.stopPropagation();
-                  if (id) {
-                    dispatch(setCustomerId(id));
-                    navigate("/admin/user");
-                    handleClose();
-                  }
-                }}
-              >
-                Batafsil
-              </Button>
             </List>
+
+            <Button
+              variant="contained"
+              fullWidth
+              onClick={(e) => {
+                e.stopPropagation();
+                if (contractId) {
+                  const role = profile.role || "admin";
+                  navigate(`/${role}/contract/${contractId}`);
+                  handleClose();
+                }
+              }}
+            >
+              Shartnomani ko'rish
+            </Button>
           </Stack>
         )}
       </DialogContent>

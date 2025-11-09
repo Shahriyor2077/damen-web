@@ -195,18 +195,45 @@ export function DebtorView() {
           >
             <Tab
               label={
-                <Typography variant="h6" flexGrow={1}>
-                  Qarizdorlar
-                </Typography>
+                <Box sx={{ textAlign: "left" }}>
+                  <Typography variant="h6" fontWeight="bold">
+                    Qarzdorlar
+                  </Typography>
+                  <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    display="block"
+                  >
+                    Mijozlar bo'yicha guruhlangan
+                  </Typography>
+                </Box>
               }
               {...a11yProps(0)}
             />
             <Tab
               label={
-                <Badge color="error" badgeContent={debtContracts.length}>
-                  <Typography variant="h6" flexGrow={1}>
-                    Qarizdorliklar
-                  </Typography>
+                <Badge
+                  color="error"
+                  badgeContent={debtContracts.length}
+                  sx={{
+                    "& .MuiBadge-badge": {
+                      fontSize: "0.75rem",
+                      fontWeight: "bold",
+                    },
+                  }}
+                >
+                  <Box sx={{ textAlign: "left", pr: 2 }}>
+                    <Typography variant="h6" fontWeight="bold">
+                      Qarzdorliklar
+                    </Typography>
+                    <Typography
+                      variant="caption"
+                      color="error.main"
+                      display="block"
+                    >
+                      Muddati o'tgan shartnomalar
+                    </Typography>
+                  </Box>
                 </Badge>
               }
               {...a11yProps(1)}
@@ -225,6 +252,25 @@ export function DebtorView() {
           />
         </CustomTabPanel>
         <CustomTabPanel value={tab} index={1}>
+          {/* Statistika */}
+          <Card sx={{ p: 2, mb: 2, bgcolor: "error.lighter" }}>
+            <Stack direction="row" spacing={3} alignItems="center">
+              <Box>
+                <Typography variant="h4" color="error.main" fontWeight="bold">
+                  {debtContracts.length}
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                  Muddati o'tgan shartnomalar
+                </Typography>
+              </Box>
+              <Box sx={{ borderLeft: 1, borderColor: "divider", pl: 3 }}>
+                <Typography variant="body2" color="text.secondary">
+                  Faqat to'lov muddati o'tgan shartnomalar ko'rsatiladi
+                </Typography>
+              </Box>
+            </Stack>
+          </Card>
+
           {selectedRows.length > 0 && (
             <Card sx={{ p: 1, mb: 1 }}>
               <Stack direction="row" spacing={2} alignItems="center">
@@ -237,7 +283,7 @@ export function DebtorView() {
                   }}
                   disabled={Boolean(startDate && endDate)}
                 >
-                  Qarizdorlarni e`lon qilish
+                  Qarzdorlarni e'lon qilish
                 </Button>
               </Stack>
             </Card>

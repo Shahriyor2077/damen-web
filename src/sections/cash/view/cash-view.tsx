@@ -2,10 +2,12 @@ import type { RootState } from "src/store";
 
 import { useSelector } from "react-redux";
 import { useRef, useState, useEffect, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 
 import {
   Card,
   Stack,
+  Alert,
   // Table,
   // Paper,
   Button,
@@ -23,9 +25,13 @@ import {
 import { useAppDispatch } from "src/hooks/useAppDispatch";
 
 import { setModal } from "src/store/slices/modalSlice";
+import { setContractId } from "src/store/slices/contractSlice";
 import { DashboardContent } from "src/layouts/dashboard";
 import { getManagers } from "src/store/actions/employeeActions";
-import { getCashs, confirmationCash } from "src/store/actions/cashActions";
+import {
+  getPendingPayments,
+  confirmPayments,
+} from "src/store/actions/cashActions";
 
 import Loader from "src/components/loader/Loader";
 
@@ -35,18 +41,24 @@ import ActionCash from "../action/action-cash";
 
 export function CashView() {
   const dispatch = useAppDispatch();
+  const navigate = useNavigate();
   const dataEmployee = useSelector((state: RootState) => state.employee);
+  const { profile } = useSelector((state: RootState) => state.auth);
   const [selectedRows, setSelectedRows] = useState<string[]>([]);
-  const { isLoading, cashs } = useSelector((state: RootState) => state.cash);
+  const { isLoading, payments, error } = useSelector(
+    (state: RootState) => state.cash
+  );
   const [manager, setManager] = useState<{
     firstName: string;
     lastName: string;
   } | null>(null);
-
   const hasFetchedManager = useRef(false);
 
+  // Seller'dan boshqa barcha role'lar tasdiqlashi mumkin
+  const canConfirmPayments = profile.role !== "seller" && profile.role !== null;
+
   useEffect(() => {
-    dispatch(getCashs());
+    dispatch(getPendingPayments());
   }, [dispatch]);
 
   const handleCustomerFocus = useCallback(() => {
@@ -59,20 +71,16 @@ export function CashView() {
     : null;
 
   const filteredCash = managerFullName
-    ? cashs.filter((cash: any) => {
+    ? payments.filter((payment: any) => {
         // managerId obyekt bo'lsa (Payment format)
-        if (cash.managerId && typeof cash.managerId === "object") {
-          const cashManagerName =
-            `${cash.managerId.firstName || ""} ${cash.managerId.lastName || ""}`.trim();
-          return cashManagerName === managerFullName;
-        }
-        // Eski format - manager string (Debtor format)
-        if (cash.manager) {
-          return cash.manager === managerFullName;
+        if (payment.managerId && typeof payment.managerId === "object") {
+          const paymentManagerName =
+            `${payment.managerId.firstName || ""} ${payment.managerId.lastName || ""}`.trim();
+          return paymentManagerName === managerFullName;
         }
         return false;
       })
-    : cashs;
+    : payments;
 
   const ManagerFilter = (
     <Autocomplete
@@ -112,7 +120,7 @@ export function CashView() {
     />
   );
 
-  if (cashs.length === 0 && isLoading) {
+  if (payments.length === 0 && isLoading) {
     return <Loader />;
   }
 
@@ -122,15 +130,33 @@ export function CashView() {
         <Typography variant="h4" flexGrow={1}>
           Kassa
         </Typography>
-        {/* Tanlangan qatorlar uchun toolbar */}
-        {selectedRows.length > 0 && (
+
+        {/* Error message */}
+        {error && (
+          <Alert
+            severity="error"
+            onClose={() => dispatch({ type: "cash/setError", payload: null })}
+          >
+            {error}
+          </Alert>
+        )}
+
+        {/* Loading indicator */}
+        {isLoading && payments.length > 0 && (
+          <Alert severity="info" icon={<CircularProgress size={20} />}>
+            Yuklanmoqda...
+          </Alert>
+        )}
+
+        {/* Tanlangan qatorlar uchun toolbar - COMMENT QILINGAN */}
+        {/* {selectedRows.length > 0 && canConfirmPayments && (
           <Card sx={{ p: 1, mb: 1 }}>
             <Stack direction="row" spacing={2} alignItems="center">
               <Typography>{selectedRows.length} ta tanlandi</Typography>
               <Button
                 variant="outlined"
                 onClick={() => {
-                  dispatch(confirmationCash(selectedRows));
+                  dispatch(confirmPayments(selectedRows));
                   setSelectedRows([]);
                 }}
               >
@@ -138,20 +164,29 @@ export function CashView() {
               </Button>
             </Stack>
           </Card>
-        )}
+        )} */}
+
+        {/* Seller uchun ogohlantirish - COMMENT QILINGAN */}
+        {/* {selectedRows.length > 0 && !canConfirmPayments && (
+          <Alert severity="warning" sx={{ mb: 1 }}>
+            Seller to&lsquo;lovlarni tasdiqlashi mumkin emas
+          </Alert>
+        )} */}
+
         <ChashTable
           data={filteredCash}
           columns={columnsCash}
           component={ManagerFilter}
-          onRowClick={(row) => {
-            dispatch(
-              setModal({
-                modal: "cashInfoModal",
-                data: { type: "info", data: row },
-              })
-            );
-          }}
-          selectable
+          // onRowClick={(row: any) => {
+          //   // ✅ Modal oynada shartnoma ma'lumotlarini ko'rsatish
+          //   dispatch(
+          //     setModal({
+          //       modal: "cashInfoModal",
+          //       data: { type: "info", data: row },
+          //     })
+          //   );
+          // }}
+          selectable={false} // ✅ Checkbox'larni o'chirish
           setSelectedRows={setSelectedRows}
           renderActions={(cash) => <ActionCash cash={cash} />}
         />

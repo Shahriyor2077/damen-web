@@ -55,10 +55,10 @@ export const columnsCash: Column[] = [
         return "—";
       }
 
-      // Emoji va rang
+      // Emoji va rang (Requirements 6.1-6.5)
       if (delayDays > 30) {
         return `🔴 ${delayDays} kun`;
-      } else if (delayDays > 7) {
+      } else if (delayDays >= 8) {
         return `🟡 ${delayDays} kun`;
       }
       return `${delayDays} kun`;

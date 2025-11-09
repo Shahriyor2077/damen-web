@@ -287,45 +287,12 @@ const PaymentSchedule: FC<PaymentScheduleProps> = ({
                     );
                   });
 
-                  // Debug - barcha to'lovlarni ko'rish
-                  if (item.month === 1 && payments.length > 0) {
-                    console.log("🔍 Barcha to'lovlar:", payments);
-                    console.log("🔍 Birinchi to'lov:", payments[0]);
-                    console.log("🔍 excessAmount:", payments[0]?.excessAmount);
-                    console.log(
-                      "🔍 remainingAmount:",
-                      payments[0]?.remainingAmount
-                    );
-                  }
-
-                  // DEBUG: Console log
-                  if (actualPayment && item.month === 1) {
-                    console.log("🔍 Payment Debug (Month 1):", {
-                      amount: actualPayment.amount,
-                      expectedAmount: actualPayment.expectedAmount,
-                      excessAmount: actualPayment.excessAmount,
-                      remainingAmount: actualPayment.remainingAmount,
-                      status: actualPayment.status,
-                    });
-                  }
-
                   const hasExcess =
-                    actualPayment?.excessAmount &&
+                    actualPayment?.excessAmount != null &&
                     actualPayment.excessAmount > 0.01;
                   const hasShortage =
-                    actualPayment?.remainingAmount &&
+                    actualPayment?.remainingAmount != null &&
                     actualPayment.remainingAmount > 0.01;
-
-                  // Debug
-                  if (actualPayment && (hasExcess || hasShortage)) {
-                    console.log(`📊 Oy ${item.month}:`, {
-                      hasExcess,
-                      hasShortage,
-                      excessAmount: actualPayment.excessAmount,
-                      remainingAmount: actualPayment.remainingAmount,
-                      actualPayment,
-                    });
-                  }
 
                   // Haqiqiy to'langan summa
                   const actualPaidAmount = actualPayment?.amount || 0;
@@ -500,68 +467,66 @@ const PaymentSchedule: FC<PaymentScheduleProps> = ({
                             <Typography variant="body2" fontWeight="medium">
                               {expectedAmount.toLocaleString()} $
                             </Typography>
-                            {item.isPaid && (
-                              <>
-                                {hasShortage && (
-                                  <Box
-                                    sx={{
-                                      display: "inline-flex",
-                                      alignItems: "center",
-                                      gap: 0.5,
-                                      mt: 0.5,
-                                      px: 1,
-                                      py: 0.25,
-                                      bgcolor: "error.lighter",
-                                      borderRadius: 1,
-                                    }}
+                            {item.isPaid &&
+                              hasShortage &&
+                              actualPayment?.remainingAmount && (
+                                <Box
+                                  sx={{
+                                    display: "inline-flex",
+                                    alignItems: "center",
+                                    gap: 0.5,
+                                    mt: 0.5,
+                                    px: 1,
+                                    py: 0.25,
+                                    bgcolor: "error.lighter",
+                                    borderRadius: 1,
+                                  }}
+                                >
+                                  <Iconify
+                                    icon="mdi:arrow-down"
+                                    width={14}
+                                    sx={{ color: "error.main" }}
+                                  />
+                                  <Typography
+                                    variant="caption"
+                                    fontWeight="bold"
+                                    color="error.main"
                                   >
-                                    <Iconify
-                                      icon="mdi:arrow-down"
-                                      width={14}
-                                      sx={{ color: "error.main" }}
-                                    />
-                                    <Typography
-                                      variant="caption"
-                                      fontWeight="bold"
-                                      color="error.main"
-                                    >
-                                      {actualPayment?.remainingAmount?.toFixed(
-                                        2
-                                      )}{" "}
-                                      $ kam
-                                    </Typography>
-                                  </Box>
-                                )}
-                                {hasExcess && (
-                                  <Box
-                                    sx={{
-                                      display: "inline-flex",
-                                      alignItems: "center",
-                                      gap: 0.5,
-                                      mt: 0.5,
-                                      px: 1,
-                                      py: 0.25,
-                                      bgcolor: "info.lighter",
-                                      borderRadius: 1,
-                                    }}
+                                    {actualPayment.remainingAmount.toLocaleString()}{" "}
+                                    $ kam
+                                  </Typography>
+                                </Box>
+                              )}
+                            {item.isPaid &&
+                              hasExcess &&
+                              actualPayment?.excessAmount && (
+                                <Box
+                                  sx={{
+                                    display: "inline-flex",
+                                    alignItems: "center",
+                                    gap: 0.5,
+                                    mt: 0.5,
+                                    px: 1,
+                                    py: 0.25,
+                                    bgcolor: "info.lighter",
+                                    borderRadius: 1,
+                                  }}
+                                >
+                                  <Iconify
+                                    icon="mdi:arrow-up"
+                                    width={14}
+                                    sx={{ color: "info.main" }}
+                                  />
+                                  <Typography
+                                    variant="caption"
+                                    fontWeight="bold"
+                                    color="info.main"
                                   >
-                                    <Iconify
-                                      icon="mdi:arrow-up"
-                                      width={14}
-                                      sx={{ color: "info.main" }}
-                                    />
-                                    <Typography
-                                      variant="caption"
-                                      fontWeight="bold"
-                                      color="info.main"
-                                    >
-                                      {actualPayment?.excessAmount?.toFixed(2)}{" "}
-                                      $ ortiqcha
-                                    </Typography>
-                                  </Box>
-                                )}
-                              </>
-                            )}
+                                    {actualPayment.excessAmount.toLocaleString()}{" "}
+                                    $ ortiqcha
+                                  </Typography>
+                                </Box>
+                              )}
                           </Box>
                         </TableCell>
 
@@ -616,8 +581,7 @@ const PaymentSchedule: FC<PaymentScheduleProps> = ({
                             bgcolor: "rgba(33, 150, 243, 0.08)",
                           }}
                         >
-                          <TableCell />
-                          <TableCell colSpan={contractId ? 4 : 3}>
+                          <TableCell colSpan={contractId ? 6 : 5}>
                             <Typography
                               variant="body2"
                               color="info.dark"
@@ -625,7 +589,7 @@ const PaymentSchedule: FC<PaymentScheduleProps> = ({
                             >
                               💰 Bu oyga{" "}
                               <strong>
-                                {actualPayment.excessAmount?.toFixed(2)} $
+                                {actualPayment.excessAmount?.toLocaleString()} $
                               </strong>{" "}
                               ortiqcha to'langan. Keyingi {item.month + 1}-oyga
                               bu summa o'tkazildi, o'sha oyga{" "}
@@ -633,7 +597,7 @@ const PaymentSchedule: FC<PaymentScheduleProps> = ({
                                 {(
                                   monthlyPaymentAmount -
                                   (actualPayment.excessAmount || 0)
-                                ).toFixed(2)}{" "}
+                                ).toLocaleString()}{" "}
                                 $
                               </strong>{" "}
                               to'lasa yetadi.
@@ -649,8 +613,7 @@ const PaymentSchedule: FC<PaymentScheduleProps> = ({
                             bgcolor: "rgba(244, 67, 54, 0.08)",
                           }}
                         >
-                          <TableCell />
-                          <TableCell colSpan={contractId ? 4 : 3}>
+                          <TableCell colSpan={contractId ? 6 : 5}>
                             <Typography
                               variant="body2"
                               color="error.dark"
@@ -658,11 +621,13 @@ const PaymentSchedule: FC<PaymentScheduleProps> = ({
                             >
                               ⚠️ Bu oyga{" "}
                               <strong>
-                                {actualPayment.remainingAmount?.toFixed(2)} $
+                                {actualPayment.remainingAmount?.toLocaleString()}{" "}
+                                $
                               </strong>{" "}
                               yetishmayapti. Yana{" "}
                               <strong>
-                                {actualPayment.remainingAmount?.toFixed(2)} $
+                                {actualPayment.remainingAmount?.toLocaleString()}{" "}
+                                $
                               </strong>{" "}
                               to'lash kerak.
                             </Typography>

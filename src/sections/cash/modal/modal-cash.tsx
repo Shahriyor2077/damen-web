@@ -4,7 +4,8 @@ import { useSelector } from "react-redux";
 import { useState, useEffect, useCallback } from "react";
 
 import { green } from "@mui/material/colors";
-import { Box ,
+import {
+  Box,
   Chip,
   Stack,
   Button,
@@ -21,7 +22,7 @@ import { useAppDispatch } from "src/hooks/useAppDispatch";
 import { formatNumber } from "src/utils/format-number";
 
 import { closeModal } from "src/store/slices/modalSlice";
-import { updateCash } from "src/store/actions/cashActions";
+// import { updateCash } from "src/store/actions/cashActions"; // DEPRECATED: updateCash has been removed
 import { getCurrencyCourse } from "src/store/actions/dashboardActions";
 
 interface IForm {
@@ -39,11 +40,16 @@ const defaultFormValues: IForm = {
   amount: 0,
 };
 
+/**
+ * @deprecated This modal is deprecated and should not be used.
+ * Use the new cash confirmation/rejection modals instead.
+ * This component is kept for backward compatibility only.
+ */
 const ModalCash = () => {
   const dispatch = useAppDispatch();
   const { cashModal } = useSelector((state: RootState) => state.modal);
   const { currency } = useSelector((state: RootState) => state.dashboard);
-  const cash = cashModal.data;
+  const cash = cashModal.data as any; // Type cast to any since this modal is deprecated
 
   const [formValues, setFormValues] = useState<IForm>(defaultFormValues);
   const [currencyCourse, setCurrencyCourse] = useState(0);
@@ -83,15 +89,19 @@ const ModalCash = () => {
     e.preventDefault();
     if (!cash) return;
 
-    dispatch(
-      updateCash({
-        id: cash._id,
-        amount: formValues.amount,
-        notes: formValues.notes,
-        currencyDetails: formValues.currencyDetails,
-        currencyCourse,
-      })
-    );
+    // DEPRECATED: updateCash has been removed
+    // Use rejectPayment or confirmPayments instead
+    console.warn("ModalCash: updateCash is deprecated and has been removed");
+
+    // dispatch(
+    //   updateCash({
+    //     id: cash._id,
+    //     amount: formValues.amount,
+    //     notes: formValues.notes,
+    //     currencyDetails: formValues.currencyDetails,
+    //     currencyCourse,
+    //   })
+    // );
 
     handleClose();
   };

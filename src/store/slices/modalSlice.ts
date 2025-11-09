@@ -1,5 +1,5 @@
 // import type { IUser } from "src/types/user";
-import type { ICash } from "src/types/cash";
+import type { IPayment } from "src/types/cash";
 import type { IDebt } from "src/types/debtor";
 import type { IMeneger } from "src/types/meneger";
 import type { IEmployee } from "src/types/employee";
@@ -10,7 +10,7 @@ import type { PayloadAction } from "@reduxjs/toolkit";
 import { createSlice } from "@reduxjs/toolkit";
 
 // modal type
-type ModalType = "add" | "edit" | "info" | undefined;
+type ModalType = "add" | "edit" | "info" | "reject" | undefined;
 
 // reusable modal structure
 type ModalData<T> = {
@@ -28,8 +28,9 @@ export interface ModalState {
   debtorModal: ModalData<IDebt>;
   // userModal: ModalData<IUser>;
 
-  cashModal: ModalData<ICash>;
+  cashModal: ModalData<IPayment>; // Changed from ICash to IPayment
   cashInfoModal: ModalData<ICustomer>;
+  cashRejectModal: ModalData<IPayment>;
   menegerModal: ModalData<IMeneger>;
   dashboardModal: ModalData<number>;
 }
@@ -44,6 +45,7 @@ export const initialState: ModalState = {
   // userModal: { type: undefined, data: undefined },
   cashModal: { type: undefined, data: undefined },
   cashInfoModal: { type: undefined, data: undefined },
+  cashRejectModal: { type: undefined, data: undefined },
   // courseModal: { type: undefined, data: undefined },
   // tutorialModal: { type: undefined, data: undefined },
   // serviceModal: { type: undefined, data: undefined },
