@@ -158,7 +158,7 @@ export function CashView() {
                 color="success"
                 onClick={() => {
                   dispatch(confirmPayments(selectedRows));
-                  setSelectedRows([]);
+                  // setSelectedRows([]); // ❌ Olib tashlandi - modal ochiq qolishi uchun
                 }}
               >
                 To&lsquo;lovlarni tasdiqlash

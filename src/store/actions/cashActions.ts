@@ -92,9 +92,9 @@ export const confirmPayments =
           })
         );
 
-        // Refresh pending payments list
-        logger.log("🔄 Refreshing pending payments...");
-        dispatch(getPendingPayments());
+        // ❌ Refresh olib tashlandi - tasdiqlangan to'lovlar ko'rinishda qolishi uchun
+        // logger.log("🔄 Refreshing pending payments...");
+        // dispatch(getPendingPayments());
       } catch (error: any) {
         logger.error("❌ Error confirming payments:", error);
         const errorMessage =
@@ -132,9 +132,9 @@ export const rejectPayment =
           })
         );
 
-        // Refresh pending payments list
-        logger.log("🔄 Refreshing pending payments...");
-        dispatch(getPendingPayments());
+        // ❌ Refresh olib tashlandi - rad etilgan to'lovlar ko'rinishda qolishi uchun
+        // logger.log("🔄 Refreshing pending payments...");
+        // dispatch(getPendingPayments());
       } catch (error: any) {
         logger.error("❌ Error rejecting payment:", error);
         const errorMessage =
