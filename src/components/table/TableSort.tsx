@@ -7,7 +7,7 @@ import type { Column, SortConfig } from "./types";
 interface TableSortProps<T> {
   anchorEl: HTMLElement | null;
   onClose: () => void;
-  columns: Column<TestLocationInfo>[];
+  columns: Column<T>[];
   sortConfig: SortConfig<T> | null;
   onSort: (key: string) => void;
 }

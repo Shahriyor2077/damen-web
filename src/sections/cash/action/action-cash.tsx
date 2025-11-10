@@ -42,21 +42,21 @@ export default function ActionCash({ cash }: { cash: IPayment }) {
 
   return (
     <Stack direction="row" spacing={0.5}>
-      {/* Ma'lumot ko'rish tugmasi - comment qilingan */}
-      {/* <Tooltip title="Ma'lumot">
+      {/* Ma'lumot ko'rish tugmasi */}
+      <Tooltip title="Ma'lumot">
         <IconButton onClick={handleSelect} size="small">
           <Iconify icon="solar:eye-bold" />
         </IconButton>
-      </Tooltip> */}
+      </Tooltip>
 
-      {/* Rad etish tugmasi - comment qilingan */}
-      {/* {canRejectPayments && (
+      {/* Rad etish tugmasi */}
+      {canRejectPayments && (
         <Tooltip title="Rad etish">
           <IconButton onClick={handleReject} size="small" color="error">
             <Iconify icon="solar:close-circle-bold" />
           </IconButton>
         </Tooltip>
-      )} */}
+      )}
     </Stack>
   );
 }

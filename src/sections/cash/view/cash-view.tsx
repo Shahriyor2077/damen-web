@@ -148,45 +148,46 @@ export function CashView() {
           </Alert>
         )}
 
-        {/* Tanlangan qatorlar uchun toolbar - COMMENT QILINGAN */}
-        {/* {selectedRows.length > 0 && canConfirmPayments && (
+        {/* Tanlangan qatorlar uchun toolbar */}
+        {selectedRows.length > 0 && canConfirmPayments && (
           <Card sx={{ p: 1, mb: 1 }}>
             <Stack direction="row" spacing={2} alignItems="center">
               <Typography>{selectedRows.length} ta tanlandi</Typography>
               <Button
-                variant="outlined"
+                variant="contained"
+                color="success"
                 onClick={() => {
                   dispatch(confirmPayments(selectedRows));
                   setSelectedRows([]);
                 }}
               >
-                To&lsquo;lovni tasdiqlash
+                To&lsquo;lovlarni tasdiqlash
               </Button>
             </Stack>
           </Card>
-        )} */}
+        )}
 
-        {/* Seller uchun ogohlantirish - COMMENT QILINGAN */}
-        {/* {selectedRows.length > 0 && !canConfirmPayments && (
+        {/* Seller uchun ogohlantirish */}
+        {selectedRows.length > 0 && !canConfirmPayments && (
           <Alert severity="warning" sx={{ mb: 1 }}>
             Seller to&lsquo;lovlarni tasdiqlashi mumkin emas
           </Alert>
-        )} */}
+        )}
 
         <ChashTable
           data={filteredCash}
           columns={columnsCash}
           component={ManagerFilter}
-          // onRowClick={(row: any) => {
-          //   // ✅ Modal oynada shartnoma ma'lumotlarini ko'rsatish
-          //   dispatch(
-          //     setModal({
-          //       modal: "cashInfoModal",
-          //       data: { type: "info", data: row },
-          //     })
-          //   );
-          // }}
-          selectable={false} // ✅ Checkbox'larni o'chirish
+          onRowClick={(row: any) => {
+            // ✅ Modal oynada shartnoma ma'lumotlarini ko'rsatish
+            dispatch(
+              setModal({
+                modal: "cashInfoModal",
+                data: { type: "info", data: row },
+              })
+            );
+          }}
+          selectable={canConfirmPayments} // ✅ Faqat kassa xodimlari uchun checkbox
           setSelectedRows={setSelectedRows}
           renderActions={(cash) => <ActionCash cash={cash} />}
         />
