@@ -198,6 +198,28 @@ const SignInView = () => {
       </Box>
 
       {renderForm}
+      <Box
+        sx={{
+          mt: 3,
+          p: 2,
+          borderRadius: 2,
+          border: '1px solid',
+          borderColor: 'divider',
+          textAlign: 'center',
+        }}
+      >
+        <Typography variant="body2" sx={{ mb: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
+          🔐 Default kirish ma&apos;lumotlari
+        </Typography>
+        <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2 }}>
+          <Box sx={{ px: 2, py: 0.5, borderRadius: 1, border: '1px solid', borderColor: 'divider' }}>
+            <Typography variant="body2">+998901234567</Typography>
+          </Box>
+          <Box sx={{ px: 2, py: 0.5, borderRadius: 1, border: '1px solid', borderColor: 'divider' }}>
+            <Typography variant="body2">admin123</Typography>
+          </Box>
+        </Box>
+      </Box>
     </>
   );
 };
